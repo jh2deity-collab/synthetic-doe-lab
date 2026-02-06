@@ -4,10 +4,11 @@ import { useState, useRef } from "react";
 import Plot from "react-plotly.js";
 import { calculateEffectSize } from "@/lib/api";
 import { EffectSizeResult } from "@/types";
-import { Scale, Loader2, FileDown } from "lucide-react";
+import { Scale, Loader2, FileDown, Upload } from "lucide-react";
 import { toPng } from "html-to-image";
 import { downloadPDF } from "@/lib/reportUtils";
 import { ReportView } from "./ReportView";
+import { parseDataFile } from "@/lib/fileParser";
 
 export default function EffectSizeSection() {
     const [groupAInput, setGroupAInput] = useState<string>("85, 87, 86, 88, 85, 89, 84");
@@ -19,6 +20,8 @@ export default function EffectSizeSection() {
     // PDF Generation State
     const [reportChartImg, setReportChartImg] = useState<string | undefined>(undefined);
     const chartRef = useRef<HTMLDivElement>(null);
+    const fileInputRefA = useRef<HTMLInputElement>(null);
+    const fileInputRefB = useRef<HTMLInputElement>(null);
 
     const handleCalculate = async () => {
         setLoading(true);
@@ -104,33 +107,88 @@ export default function EffectSizeSection() {
         }
     };
 
+    const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>, setInput: (v: string) => void) => {
+        const file = e.target.files?.[0];
+        if (!file) return;
+
+        try {
+            const parsedData = await parseDataFile(file);
+            setInput(parsedData);
+            setError(null);
+        } catch (err) {
+            console.error("File upload error:", err);
+            setError("파일 처리 중 오류가 발생했습니다.");
+        } finally {
+            // Reset input
+            e.target.value = '';
+        }
+    };
+
     return (
         <div className="space-y-8 relative">
             <div className="bg-white/5 border border-white/10 p-6 rounded-2xl">
                 <h3 className="text-xl font-bold mb-4 flex items-center gap-2">
                     <Scale className="w-5 h-5 text-purple-400" />
-                    그룹 데이터 입력
+                    효과 크기 분석 (Cohen's d)
                 </h3>
-                <div className="grid md:grid-cols-2 gap-6">
-                    <div>
-                        <label className="block text-sm font-medium text-slate-300 mb-1">
-                            Group A (Control)
-                        </label>
-                        <textarea
-                            value={groupAInput}
-                            onChange={(e) => setGroupAInput(e.target.value)}
-                            className="w-full bg-black/30 border border-white/10 rounded-lg p-3 text-white h-24 focus:outline-none focus:border-lab-lime transition-colors"
-                        />
+                <div className="grid md:grid-cols-2 gap-8">
+                    <div className="space-y-4">
+                        <div>
+                            <div className="flex justify-between items-center mb-1">
+                                <label className="block text-sm font-medium text-slate-300">
+                                    그룹 A 데이터 (실험군)
+                                </label>
+                                <button
+                                    onClick={() => fileInputRefA.current?.click()}
+                                    className="flex items-center gap-1 text-xs text-purple-400 hover:text-purple-300 transition-colors"
+                                >
+                                    <Upload className="w-3 h-3" />
+                                    파일 업로드
+                                </button>
+                                <input
+                                    type="file"
+                                    ref={fileInputRefA}
+                                    onChange={(e) => handleFileUpload(e, setGroupAInput)}
+                                    accept=".csv,.xlsx,.xls,.txt"
+                                    className="hidden"
+                                />
+                            </div>
+                            <textarea
+                                value={groupAInput}
+                                onChange={(e) => setGroupAInput(e.target.value)}
+                                className="w-full bg-black/30 border border-white/10 rounded-lg p-3 text-white h-24 focus:outline-none focus:border-purple-400 transition-colors"
+                                placeholder="85, 87, 86..."
+                            />
+                        </div>
                     </div>
-                    <div>
-                        <label className="block text-sm font-medium text-slate-300 mb-1">
-                            Group B (Experimental)
-                        </label>
-                        <textarea
-                            value={groupBInput}
-                            onChange={(e) => setGroupBInput(e.target.value)}
-                            className="w-full bg-black/30 border border-white/10 rounded-lg p-3 text-white h-24 focus:outline-none focus:border-purple-400 transition-colors"
-                        />
+                    <div className="space-y-4">
+                        <div>
+                            <div className="flex justify-between items-center mb-1">
+                                <label className="block text-sm font-medium text-slate-300">
+                                    그룹 B 데이터 (대조군)
+                                </label>
+                                <button
+                                    onClick={() => fileInputRefB.current?.click()}
+                                    className="flex items-center gap-1 text-xs text-purple-400 hover:text-purple-300 transition-colors"
+                                >
+                                    <Upload className="w-3 h-3" />
+                                    파일 업로드
+                                </button>
+                                <input
+                                    type="file"
+                                    ref={fileInputRefB}
+                                    onChange={(e) => handleFileUpload(e, setGroupBInput)}
+                                    accept=".csv,.xlsx,.xls,.txt"
+                                    className="hidden"
+                                />
+                            </div>
+                            <textarea
+                                value={groupBInput}
+                                onChange={(e) => setGroupBInput(e.target.value)}
+                                className="w-full bg-black/30 border border-white/10 rounded-lg p-3 text-white h-24 focus:outline-none focus:border-purple-400 transition-colors"
+                                placeholder="92, 91, 93..."
+                            />
+                        </div>
                     </div>
                 </div>
                 <div className="mt-6">

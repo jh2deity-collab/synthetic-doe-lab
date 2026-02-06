@@ -4,10 +4,11 @@ import { useState, useRef } from "react";
 import Plot from "react-plotly.js";
 import { calculateAdvancedEstimation } from "@/lib/api";
 import { AdvancedResult } from "@/types";
-import { BrainCircuit, Loader2, FileDown } from "lucide-react";
+import { BrainCircuit, Loader2, FileDown, Upload } from "lucide-react";
 import { toPng } from "html-to-image";
 import { downloadPDF } from "@/lib/reportUtils";
 import { ReportView } from "./ReportView";
+import { parseDataFile } from "@/lib/fileParser";
 
 export default function AdvancedEstimationSection() {
     const [dataInput, setDataInput] = useState<string>("5.1, 4.9, 5.2, 5.8, 4.8, 5.1, 5.3, 5.0");
@@ -20,6 +21,7 @@ export default function AdvancedEstimationSection() {
     // PDF Generation State
     const [reportChartImg, setReportChartImg] = useState<string | undefined>(undefined);
     const chartRef = useRef<HTMLDivElement>(null);
+    const fileInputRef = useRef<HTMLInputElement>(null);
 
     const handleCalculate = async () => {
         setLoading(true);
@@ -121,6 +123,22 @@ export default function AdvancedEstimationSection() {
         }
     };
 
+    const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+        const file = e.target.files?.[0];
+        if (!file) return;
+
+        try {
+            const parsedData = await parseDataFile(file);
+            setDataInput(parsedData);
+            setError(null);
+        } catch (err) {
+            console.error("File upload error:", err);
+            setError("파일 처리 중 오류가 발생했습니다.");
+        } finally {
+            e.target.value = '';
+        }
+    };
+
     return (
         <div className="space-y-8 relative">
             <div className="bg-white/5 border border-white/10 p-6 rounded-2xl">
@@ -131,9 +149,25 @@ export default function AdvancedEstimationSection() {
                 <div className="grid md:grid-cols-2 gap-8">
                     <div className="space-y-4">
                         <div>
-                            <label className="block text-sm font-medium text-slate-300 mb-1">
-                                관측 데이터 (Data)
-                            </label>
+                            <div className="flex justify-between items-center mb-1">
+                                <label className="block text-sm font-medium text-slate-300">
+                                    관측 데이터 (Data)
+                                </label>
+                                <button
+                                    onClick={() => fileInputRef.current?.click()}
+                                    className="flex items-center gap-1 text-xs text-blue-400 hover:text-blue-300 transition-colors"
+                                >
+                                    <Upload className="w-3 h-3" />
+                                    파일 업로드
+                                </button>
+                                <input
+                                    type="file"
+                                    ref={fileInputRef}
+                                    onChange={handleFileUpload}
+                                    accept=".csv,.xlsx,.xls,.txt"
+                                    className="hidden"
+                                />
+                            </div>
                             <textarea
                                 value={dataInput}
                                 onChange={(e) => setDataInput(e.target.value)}

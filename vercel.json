@@ -1,10 +1,9 @@
 {
     "version": 2,
-    "trailingSlash": false,
-    "rewrites": [
+    "routes": [
         {
-            "source": "/api/:path*",
-            "destination": "/api/index.py"
+            "src": "/api/(.*)",
+            "dest": "/api/index.py"
         }
     ]
 }

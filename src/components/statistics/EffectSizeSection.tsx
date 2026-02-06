@@ -297,11 +297,9 @@ export default function EffectSizeSection() {
                             </div>
                             <div id="effect-size-report-page-2" style={{ display: 'none' }}></div>
                         </div>
-                        </div>
+                    )}
+                </div>
             )}
         </div>
-    )
-}
-        </div >
     );
 }

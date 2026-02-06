@@ -326,11 +326,9 @@ export default function AdvancedEstimationSection() {
                             </div>
                             <div id="advanced-estimation-report-page-2" style={{ display: 'none' }}></div>
                         </div>
-                        </div>
+                    )}
+                </div>
             )}
         </div>
-    )
-}
-        </div >
     );
 }

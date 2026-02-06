@@ -130,6 +130,20 @@ def perform_spc_analysis(request: SPCAnalysisRequest):
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
+@app.options("/spc")
+def spc_options():
+    """
+    Explicit OPTIONS handler for SPC endpoint to avoid 405.
+    """
+    return {"status": "ok", "allowed": ["POST", "OPTIONS"]}
+
+@app.get("/spc")
+def spc_debug_get():
+    """
+    Debug GET handler for SPC endpoint.
+    """
+    return {"status": "debug", "message": "SPC endpoint is reachable. Use POST to perform analysis."}
+
 if __name__ == "__main__":
     import uvicorn
     uvicorn.run(app, host="0.0.0.0", port=8000)

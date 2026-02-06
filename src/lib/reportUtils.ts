@@ -1,48 +1,54 @@
 import { toPng } from 'html-to-image';
 import jsPDF from 'jspdf';
 
-export const downloadPDF = async (elementId: string, fileName: string) => {
-    const element = document.getElementById(elementId);
-    if (!element) {
-        console.error(`Element not found: ${elementId}`);
-        return;
-    }
-
+/**
+ * Downloads a multi-page PDF report by capturing each page element separately
+ * @param baseElementId - Base ID for report pages (e.g., "estimation-report")
+ * @param fileName - Name of the PDF file to download
+ */
+export const downloadPDF = async (baseElementId: string, fileName: string) => {
     try {
-        // Use html-to-image for better compatibility with modern CSS
-        const imgData = await toPng(element, {
-            backgroundColor: '#ffffff',
-            cacheBust: true,
-            pixelRatio: 2 // High quality
-        });
-
         // A4 Paper Size in mm (Landscape)
         const pdfWidth = 297;
         const pdfHeight = 210;
 
         const pdf = new jsPDF('l', 'mm', 'a4');
 
-        const imgProps = (pdf as any).getImageProperties(imgData);
-        const imgHeight = (imgProps.height * pdfWidth) / imgProps.width;
-
-        let heightLeft = imgHeight;
-        let position = 0;
-
-        // First page
-        pdf.addImage(imgData, 'PNG', 0, position, pdfWidth, imgHeight);
-        heightLeft -= pdfHeight;
-
-        // Multi-page handling (if content is long)
-        while (heightLeft > 0) {
-            position = heightLeft - imgHeight;
-            pdf.addPage();
-            pdf.addImage(imgData, 'PNG', 0, position, pdfWidth, imgHeight);
-            heightLeft -= pdfHeight;
+        // Capture Page 1
+        const page1Element = document.getElementById(`${baseElementId}-page-1`);
+        if (!page1Element) {
+            throw new Error('Report page 1 element not found');
         }
 
+        const page1ImgData = await toPng(page1Element, {
+            backgroundColor: '#ffffff',
+            pixelRatio: 2
+        });
+
+        const page1ImgProps = (pdf as any).getImageProperties(page1ImgData);
+        const page1ImgHeight = (page1ImgProps.height * pdfWidth) / page1ImgProps.width;
+
+        pdf.addImage(page1ImgData, 'PNG', 0, 0, pdfWidth, Math.min(page1ImgHeight, pdfHeight));
+
+        // Capture Page 2
+        const page2Element = document.getElementById(`${baseElementId}-page-2`);
+        if (page2Element) {
+            const page2ImgData = await toPng(page2Element, {
+                backgroundColor: '#ffffff',
+                pixelRatio: 2
+            });
+
+            pdf.addPage();
+            const page2ImgProps = (pdf as any).getImageProperties(page2ImgData);
+            const page2ImgHeight = (page2ImgProps.height * pdfWidth) / page2ImgProps.width;
+
+            pdf.addImage(page2ImgData, 'PNG', 0, 0, pdfWidth, Math.min(page2ImgHeight, pdfHeight));
+        }
+
+        // Download the PDF
         pdf.save(fileName);
     } catch (error) {
-        console.error('PDF Generation Error:', error);
-        alert('리포트 생성 중 오류가 발생했습니다. (Unsupported CSS Syntax)');
+        console.error('PDF generation failed:', error);
+        throw error;
     }
 };

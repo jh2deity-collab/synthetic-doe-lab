@@ -266,11 +266,10 @@ export default function EstimationSection() {
                             </div>
                             <div id="estimation-report-page-2" style={{ display: 'none' }}></div>
                         </div>
-                        </div>
-            )}
-        </div>
-    )
-}
+                    )}
+                </div>
+            )
+            }
         </div >
     );
 }

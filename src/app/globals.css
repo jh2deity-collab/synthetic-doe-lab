@@ -9,6 +9,27 @@
   --color-lab-dark: #0F172A;
   --color-lab-lime: #bef264;
   --color-lab-blue: #1e293b;
+
+  /* Overrides for html2canvas compatibility (oklab fallback) */
+  --color-lime-50: #f7fee7;
+  --color-lime-200: #d9f99d;
+  --color-lime-500: #84cc16;
+  --color-lime-600: #65a30d;
+  --color-lime-700: #4d7c0f;
+
+  --color-purple-500: #a855f7;
+
+  --color-blue-50: #eff6ff;
+  --color-blue-100: #dbeafe;
+  --color-blue-500: #3b82f6;
+  --color-blue-700: #1d4ed8;
+
+  --color-gray-50: #f9fafb;
+  --color-gray-200: #e5e7eb;
+  --color-gray-400: #9ca3af;
+  --color-gray-500: #6b7280;
+  --color-gray-700: #374151;
+  --color-gray-800: #1f2937;
 }
 
 :root {

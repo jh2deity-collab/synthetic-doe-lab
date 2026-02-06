@@ -25,10 +25,7 @@ export default function StatisticsPage() {
                         <span className="text-slate-600 mx-2">/</span>
                         <span className="text-white">Statistical Dashboard</span>
                     </div>
-                    <Link href="/" className="flex items-center gap-2 text-sm text-slate-400 hover:text-white transition-colors">
-                        <ArrowLeft className="w-4 h-4" />
-                        메인으로
-                    </Link>
+
                 </div>
             </nav>
 

@@ -1,11 +1,14 @@
 "use client";
 
 import { useState } from "react";
+import dynamic from "next/dynamic";
 import Link from "next/link";
 import { FlaskConical, Calculator, Scale, BrainCircuit, ArrowLeft } from "lucide-react";
-import EstimationSection from "@/components/statistics/EstimationSection";
-import EffectSizeSection from "@/components/statistics/EffectSizeSection";
-import AdvancedEstimationSection from "@/components/statistics/AdvancedEstimationSection";
+
+// Dynamic imports to avoid SSR issues with Plotly
+const EstimationSection = dynamic(() => import("@/components/statistics/EstimationSection"), { ssr: false });
+const EffectSizeSection = dynamic(() => import("@/components/statistics/EffectSizeSection"), { ssr: false });
+const AdvancedEstimationSection = dynamic(() => import("@/components/statistics/AdvancedEstimationSection"), { ssr: false });
 
 type Tab = 'estimation' | 'effect-size' | 'advanced';
 

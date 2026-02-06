@@ -10,6 +10,8 @@ load_dotenv(".env.local") # Load user-preferred local env file
 load_dotenv() # Fallback to .env
 
 # Config reload trigger (Mock Updated)
+# FastAPI backend for Synthetic DOE Lab
+# Version: 2024-02-06-v2 (ARIMA fix applied)
 app = FastAPI(
     title="Synthetic DOE Lab API",
     description="API for Smart Design of Experiments and Synthetic Data Generation",

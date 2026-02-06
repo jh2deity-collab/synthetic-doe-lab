@@ -5,18 +5,54 @@ import Link from "next/link";
 import { Upload, FileSpreadsheet, Table2, Play, AlertCircle, Download, FlaskConical } from "lucide-react";
 import * as XLSX from "xlsx";
 import { clsx } from "clsx";
+import dynamic from "next/dynamic";
 import { SPCDashboard } from "@/components/spc/SPCDashboard";
+const HelpSection = dynamic(() => import("@/components/common/HelpSection").then(mod => mod.HelpSection), { ssr: false });
 
 import { SPCResult } from "@/types";
 
 export default function AnalysisPage() {
-    const [activeTab, setActiveTab] = useState<'upload' | 'manual'>('upload');
+    const [activeTab, setActiveTab] = useState<'upload' | 'manual' | 'help'>('upload');
     const [data, setData] = useState<Record<string, unknown>[] | null>(null);
     const [columns, setColumns] = useState<string[]>([]);
     const [isLoading, setIsLoading] = useState(false);
     const [error, setError] = useState<string | null>(null);
     const [analysisResult, setAnalysisResult] = useState<SPCResult | null>(null);
     const [dataContext, setDataContext] = useState("");
+
+    // Help Items
+    const helpItems = [
+        {
+            title: "DOE (Design of Experiments, 실험계획법)",
+            description: "해결하고자 하는 문제에 영향을 미치는 인자들을 선정하고, 최적의 실험 조건을 결정하는 통계적 방법입니다.",
+            details: [
+                "최소한의 실험 횟수로 최대한의 정보를 얻는 것이 목적입니다.",
+                "인자(Factor): 결과에 영향을 주는 변수",
+                "반응치(Response): 실험의 결과값"
+            ],
+            color: "bg-lab-lime/10"
+        },
+        {
+            title: "SPC (Statistical Process Control, 통계적 공정 관리)",
+            description: "공정 데이터를 실시간으로 수집 및 분석하여 공정의 안정성을 유지하고 품질을 관리하는 기법입니다.",
+            details: [
+                "X-bar 관리도: 공정 평균의 변화를 감시합니다.",
+                "R(Range) 관리도: 공정 산포(변동)의 변화를 감시합니다.",
+                "관리 한계선(UCL, LCL): 통계적으로 허용되는 변동의 범위입니다."
+            ],
+            color: "bg-blue-500/10"
+        },
+        {
+            title: "Process Capability (공정 능력)",
+            description: "공정이 규격에 맞는 제품을 생산할 수 있는 능력을 정량적으로 나타낸 지표입니다.",
+            details: [
+                "Cp: 공정의 정밀도(산포)만 고려한 지표",
+                "Cpk: 공정의 치우침(평균의 위치)까지 고려한 실질적인 능력 지표",
+                "일반적으로 1.33 이상이면 양호한 것으로 판단합니다."
+            ],
+            color: "bg-purple-500/10"
+        }
+    ];
 
     // PDF State
     const [showReport, setShowReport] = useState(false);
@@ -58,6 +94,8 @@ export default function AnalysisPage() {
 
                 setColumns(headers);
                 setData(rows);
+                setAnalysisResult(null); // Reset analysis results when a new file is loaded
+                setActiveTab('upload'); // Switch back from help if needed
             } catch (err: unknown) {
                 const msg = err instanceof Error ? err.message : "Unknown error";
                 setError("Failed to parse file: " + msg);
@@ -199,13 +237,19 @@ export default function AnalysisPage() {
             <main className="max-w-7xl mx-auto p-6">
                 <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
                     {/* Left Column: Input */}
-                    <section className="bg-white/5 border border-white/10 p-6 rounded-2xl h-fit">
+                    <section className="bg-white/5 border border-white/10 p-6 rounded-2xl h-fit shadow-xl">
                         <div className="flex gap-4 border-b border-white/10 pb-4 mb-6">
                             <button
                                 onClick={() => setActiveTab('upload')}
                                 className={clsx("flex items-center gap-2 pb-2 text-sm font-bold transition-all border-b-2", activeTab === 'upload' ? "border-lab-lime text-lab-lime" : "border-transparent text-slate-400")}
                             >
                                 <Upload className="w-4 h-4" /> 파일 업로드
+                            </button>
+                            <button
+                                onClick={() => setActiveTab('help')}
+                                className={clsx("flex items-center gap-2 pb-2 text-sm font-bold transition-all border-b-2", activeTab === 'help' ? "border-white text-white" : "border-transparent text-slate-500")}
+                            >
+                                ❓ 도움말
                             </button>
                         </div>
 
@@ -287,7 +331,16 @@ export default function AnalysisPage() {
 
                     {/* Right Column: Preview & Results */}
                     <section className="lg:col-span-2 space-y-6">
-                        {data && !analysisResult && (
+                        {activeTab === 'help' && (
+                            <HelpSection
+                                title="DOE 분석 도움말"
+                                subtitle="실험계획법 및 통계적 공정 관리를 위한 기초 가이드입니다."
+                                items={helpItems}
+                                onClose={() => setActiveTab('upload')}
+                            />
+                        )}
+
+                        {activeTab !== 'help' && data && !analysisResult && (
                             <div className="bg-white/5 border border-white/10 p-6 rounded-2xl overflow-hidden">
                                 <h3 className="text-lg font-bold mb-4 flex items-center gap-2">
                                     <Table2 className="w-5 h-5 text-slate-400" /> 데이터 미리보기
@@ -319,6 +372,13 @@ export default function AnalysisPage() {
                                     spcResult={analysisResult}
                                     variables={columns.map(c => ({ name: c, type: (data && (data || []).length > 0 && typeof (data || [])[0][c] === 'number') ? 'continuous' : 'categorical', min: 0, max: 0 }))}
                                 />
+                            </div>
+                        )}
+
+                        {!data && !analysisResult && activeTab !== 'help' && (
+                            <div className="flex flex-col items-center justify-center h-full text-slate-500 py-20 bg-white/5 border border-white/10 rounded-2xl border-dashed">
+                                <FileSpreadsheet className="w-16 h-16 mb-4 opacity-20" />
+                                <p>분석할 데이터를 업로드하거나 왼쪽 탭을 확인해 주세요.</p>
                             </div>
                         )}
                     </section>

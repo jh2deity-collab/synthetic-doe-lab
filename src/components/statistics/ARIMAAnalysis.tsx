@@ -212,14 +212,58 @@ export default function ARIMAAnalysis() {
 
                 <div className="mb-4">
                     <label className="block text-sm font-medium text-slate-300 mb-2">
-                        시계열 데이터 (쉼표로 구분)
+                        시계열 데이터
                     </label>
+
+                    {/* File Upload Button */}
+                    <div className="flex gap-2 mb-2">
+                        <input
+                            type="file"
+                            accept=".csv,.txt"
+                            onChange={async (e) => {
+                                const file = e.target.files?.[0];
+                                if (!file) return;
+
+                                try {
+                                    const text = await file.text();
+                                    // Parse CSV - assume single column or comma-separated values
+                                    const values = text
+                                        .split(/[\n,]/)
+                                        .map(v => v.trim())
+                                        .filter(v => v && !isNaN(parseFloat(v)))
+                                        .map(v => parseFloat(v));
+
+                                    if (values.length > 0) {
+                                        setDataInput(values.join(', '));
+                                    }
+                                } catch (err) {
+                                    setError('파일을 읽을 수 없습니다.');
+                                }
+                            }}
+                            className="hidden"
+                            id="arima-file-upload"
+                        />
+                        <label
+                            htmlFor="arima-file-upload"
+                            className="px-4 py-2 bg-slate-700 hover:bg-slate-600 text-white rounded-lg cursor-pointer transition-colors flex items-center gap-2 text-sm"
+                        >
+                            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12" />
+                            </svg>
+                            CSV 파일 업로드
+                        </label>
+                        <div className="text-xs text-slate-400 flex items-center">
+                            (.csv, .txt 파일 지원)
+                        </div>
+                    </div>
+
+                    {/* Manual Input */}
                     <textarea
                         value={dataInput}
                         onChange={(e) => setDataInput(e.target.value)}
                         rows={3}
                         className="w-full px-4 py-2 bg-slate-900 border border-slate-600 rounded-lg text-white focus:ring-2 focus:ring-lime-500 focus:border-transparent font-mono text-sm"
-                        placeholder="10, 12, 13, 15, 14, 16..."
+                        placeholder="10, 12, 13, 15, 14, 16... 또는 위에서 파일 업로드"
                     />
                 </div>
 

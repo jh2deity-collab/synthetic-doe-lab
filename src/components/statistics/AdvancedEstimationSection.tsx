@@ -170,7 +170,7 @@ export default function AdvancedEstimationSection() {
                             }`}
                     >
                         <BrainCircuit className="w-5 h-5 inline-block mr-2" />
-                        베이지안 추정
+                        Bayesian
                     </button>
                     <button
                         onClick={() => setActiveTab('arima')}
@@ -198,8 +198,8 @@ export default function AdvancedEstimationSection() {
                 <div className="bg-white/5 border border-white/10 p-6 rounded-2xl">
                     <h3 className="text-xl font-bold mb-4 flex items-center gap-2">
                         <BrainCircuit className="w-5 h-5 text-blue-400" />
-                        베이지안 추정 설정
-                    </h3>
+                        Bayesian 추정 설정
+                    </h3 >
                     <div className="grid md:grid-cols-2 gap-8">
                         <div className="space-y-4">
                             <div>
@@ -350,7 +350,7 @@ export default function AdvancedEstimationSection() {
                                 <div style={{ position: 'fixed', top: 0, left: 0, zIndex: 9000, backgroundColor: 'white' }}>
                                     <ReportView
                                         baseId="advanced-estimation-report"
-                                        title="베이지안 파라미터 추정 리포트"
+                                        title="Bayesian 시계열 분석 리포트"
                                         date={new Date().toLocaleDateString('ko-KR')}
                                         params={[
                                             { label: "사전 평균", value: priorMean },

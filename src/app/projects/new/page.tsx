@@ -8,7 +8,9 @@ import Link from "next/link";
 import { useState } from "react";
 import { generateDesign } from "@/lib/api";
 import clsx from "clsx";
+import dynamic from "next/dynamic";
 import { SPCResult, DesignConfig } from "@/types";
+const HelpSection = dynamic(() => import("@/components/common/HelpSection").then(mod => mod.HelpSection), { ssr: false });
 // import { SPCDashboard } from "@/components/spc/SPCDashboard"; // Removed unused
 // import { jsPDF } from "jspdf"; // Removed unused dynamic import reference
 
@@ -48,6 +50,40 @@ export default function NewExperimentPage() {
     const [useRealData, setUseRealData] = useState(false);
     const [analysisHtml, setAnalysisHtml] = useState<string>("");
     const [showReport, setShowReport] = useState(false);
+    const [showHelp, setShowHelp] = useState(false);
+
+    const helpItems = [
+        {
+            title: "Synthetic Data (합성 데이터)",
+            description: "실제 실험을 수행하지 않고도 AI가 도메인 지식과 통계적 인과관계를 바탕으로 생성한 데이터입니다.",
+            details: [
+                "실제 실험 비용을 획기적으로 절감할 수 있습니다.",
+                "부족한 데이터를 보충하여 모델의 정확도를 높입니다.",
+                "자연어 프롬프트를 통해 복잡한 물리 법칙을 AI에게 전달합니다."
+            ],
+            color: "bg-lab-lime/10"
+        },
+        {
+            title: "Digital Twin (디지털 트윈)",
+            description: "물리적 자산이나 공정을 가상 세계에 구현하여 실시간 최적화 및 시뮬레이션을 가능하게 합니다.",
+            details: [
+                "가상 공간에서의 무한한 실험이 가능합니다.",
+                "실패 위험 없이 극한 조건을 테스트해볼 수 있습니다.",
+                "현실의 데이터를 가상 모델에 반영하여 최신 상태를 유지합니다."
+            ],
+            color: "bg-blue-500/10"
+        },
+        {
+            title: "LHC (Latin Hypercube Sampling)",
+            description: "전체 실험 공간을 균등하게 커버할 수 있도록 샘플링하는 고급 DOE 기법입니다.",
+            details: [
+                "변수의 분포를 고려하여 중복되지 않게 샘플을 추출합니다.",
+                "적은 실험 횟수로도 전체 트렌드를 파악하기에 최적입니다.",
+                "고차원 변수 환경에서 특히 강력합니다."
+            ],
+            color: "bg-purple-500/10"
+        }
+    ];
 
     const onSubmit = async (data: FormValues) => {
         setIsLoading(true);
@@ -273,178 +309,201 @@ export default function NewExperimentPage() {
 
                         {/* Column 3: Result Preview */}
                         <section id="report-container" className="bg-white/5 border border-white/10 p-6 rounded-2xl flex flex-col h-full overflow-y-auto custom-scrollbar relative">
-                            <h3 className="text-sm font-bold text-slate-400 uppercase tracking-wider mb-6 flex items-center gap-2 sticky top-0 bg-[#13141f] py-2 z-10 w-full border-b border-white/10">
-                                <LayoutGrid className="w-4 h-4" />
-                                결과 미리보기
-                            </h3>
+                            <div className="flex items-center justify-between mb-6 sticky top-0 bg-[#13141f] py-2 z-10 w-full border-b border-white/10">
+                                <h3 className="text-sm font-bold text-slate-400 uppercase tracking-wider flex items-center gap-2">
+                                    <LayoutGrid className="w-4 h-4" />
+                                    {showHelp ? "도움말 및 용어 설명" : "결과 미리보기"}
+                                </h3>
+                                <button
+                                    type="button"
+                                    onClick={() => setShowHelp(!showHelp)}
+                                    className={clsx(
+                                        "px-3 py-1 rounded-full text-xs font-bold transition-all border",
+                                        showHelp ? "bg-white text-black border-white" : "bg-white/5 text-slate-400 border-white/10 hover:bg-white/10"
+                                    )}
+                                >
+                                    {showHelp ? "닫기" : "❓ 도움말"}
+                                </button>
+                            </div>
 
-                            {!result ? (
-                                <div className="flex-1 flex flex-col items-center justify-center text-slate-500 min-h-[400px]">
-                                    <LayoutGrid className="w-16 h-16 mb-4 opacity-20" />
-                                    <p className="text-center text-sm leading-relaxed">
-                                        좌측에서 실험 조건을 설정하고<br />
-                                        <strong className="text-lab-lime">실험계획 생성</strong> 버튼을 눌러주세요.
-                                    </p>
-                                </div>
+                            {showHelp ? (
+                                <HelpSection
+                                    title="가상 분석 가이드"
+                                    subtitle="가상 실험 및 합성 데이터 생성에 관한 주요 개념입니다."
+                                    items={helpItems}
+                                />
                             ) : (
-                                <div className="space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-500 pb-20">
-                                    <div className="flex items-center justify-between bg-green-500/10 border border-green-500/20 p-4 rounded-xl">
-                                        <div className="flex items-center gap-2 text-green-400">
-                                            <CheckCircle2 className="w-5 h-5" />
-                                            <span className="font-bold">계획 생성 완료!</span>
+                                <>
+                                    {!result ? (
+                                        <div className="flex-1 flex flex-col items-center justify-center text-slate-500 min-h-[400px]">
+                                            <LayoutGrid className="w-16 h-16 mb-4 opacity-20" />
+                                            <p className="text-center text-sm leading-relaxed">
+                                                좌측에서 실험 조건을 설정하고<br />
+                                                <strong className="text-lab-lime">실험계획 생성</strong> 버튼을 눌러주세요.
+                                            </p>
                                         </div>
-                                        <div className="flex gap-4 text-xs font-mono">
-                                            <div>
-                                                <span className="text-slate-500 mr-2">Strategy:</span>
-                                                <span className="text-white">{result.strategy}</span>
-                                            </div>
-                                            <div>
-                                                <span className="text-slate-500 mr-2">Runs:</span>
-                                                <span className="text-green-400 font-bold">{result.num_runs}</span>
-                                            </div>
-                                        </div>
-                                    </div>
-
-                                    {/* Visualization */}
-                                    <div className="space-y-2">
-                                        <h4 className="text-[10px] uppercase font-bold text-slate-500">공간 충진 시각화 (Space Filling)</h4>
-                                        <DistributionPlot
-                                            matrix={result.matrix}
-                                            variables={methods.getValues().variables}
-                                        />
-                                    </div>
-
-                                    {/* Generation Trigger */}
-                                    <div className="pt-6 border-t border-white/5 space-y-4">
-                                        <div className="flex items-center justify-between">
-                                            <h4 className="text-[10px] uppercase font-bold text-slate-500">데이터 합성 (Data Synthesis)</h4>
-
-                                            {/* Toggle Switch */}
-                                            <div className="flex items-center gap-2 cursor-pointer group" onClick={() => setUseRealData(!useRealData)}>
-                                                <span className={clsx("text-[10px] font-bold transition-colors", !useRealData ? "text-slate-400" : "text-slate-600")}>Mock</span>
-                                                <div className={clsx(
-                                                    "w-10 h-5 rounded-full p-1 transition-colors relative",
-                                                    useRealData ? "bg-lab-lime" : "bg-slate-700"
-                                                )}>
-                                                    <div className={clsx(
-                                                        "w-3 h-3 rounded-full bg-white transition-transform shadow-sm",
-                                                        useRealData ? "translate-x-5" : "translate-x-0"
-                                                    )} />
+                                    ) : (
+                                        <div className="space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-500 pb-20">
+                                            {/* ... rest of result content stay inside active container */}
+                                            <div className="flex items-center justify-between bg-green-500/10 border border-green-500/20 p-4 rounded-xl">
+                                                <div className="flex items-center gap-2 text-green-400">
+                                                    <CheckCircle2 className="w-5 h-5" />
+                                                    <span className="font-bold">계획 생성 완료!</span>
                                                 </div>
-                                                <span className={clsx("text-[10px] font-bold transition-colors", useRealData ? "text-lab-lime" : "text-slate-600")}>OpenAI</span>
+                                                <div className="flex gap-4 text-xs font-mono">
+                                                    <div>
+                                                        <span className="text-slate-500 mr-2">Strategy:</span>
+                                                        <span className="text-white">{result.strategy}</span>
+                                                    </div>
+                                                    <div>
+                                                        <span className="text-slate-500 mr-2">Runs:</span>
+                                                        <span className="text-green-400 font-bold">{result.num_runs}</span>
+                                                    </div>
+                                                </div>
                                             </div>
-                                        </div>
 
-                                        <button
-                                            type="button"
-                                            onClick={async () => {
-                                                const { generateSyntheticData, performSPCAnalysis } = await import("@/lib/api");
-                                                setIsLoading(true);
-                                                const genRes = await generateSyntheticData({
-                                                    matrix: result.matrix,
-                                                    context: methods.getValues("description") || "Standard scientific observation",
-                                                    mock: !useRealData
-                                                });
+                                            {/* Visualization */}
+                                            <div className="space-y-2">
+                                                <h4 className="text-[10px] uppercase font-bold text-slate-500">공간 충진 시각화 (Space Filling)</h4>
+                                                <DistributionPlot
+                                                    matrix={result.matrix}
+                                                    variables={methods.getValues().variables}
+                                                />
+                                            </div>
 
-                                                if (genRes && genRes.data) {
-                                                    const newMatrix = genRes.data;
-                                                    setResult({ ...result, matrix: newMatrix });
-                                                    const spcRes = await performSPCAnalysis({
-                                                        data: newMatrix,
-                                                        target_variable: "Response"
-                                                    });
-                                                    setSpcResult(spcRes);
-                                                }
-                                                setIsLoading(false);
-                                            }}
-                                            className={clsx(
-                                                "w-full py-3 border rounded-xl text-sm font-bold transition-all flex items-center justify-center gap-2 shadow-lg",
-                                                useRealData
-                                                    ? "bg-purple-500/10 hover:bg-purple-500/20 text-purple-400 border-purple-500/20 shadow-purple-900/10"
-                                                    : "bg-lab-lime/10 hover:bg-lab-lime/20 text-lab-lime border-lab-lime/20 shadow-lime-900/10"
+                                            {/* Generation Trigger */}
+                                            <div className="pt-6 border-t border-white/5 space-y-4">
+                                                <div className="flex items-center justify-between">
+                                                    <h4 className="text-[10px] uppercase font-bold text-slate-500">데이터 합성 (Data Synthesis)</h4>
+
+                                                    {/* Toggle Switch */}
+                                                    <div className="flex items-center gap-2 cursor-pointer group" onClick={() => setUseRealData(!useRealData)}>
+                                                        <span className={clsx("text-[10px] font-bold transition-colors", !useRealData ? "text-slate-400" : "text-slate-600")}>Mock</span>
+                                                        <div className={clsx(
+                                                            "w-10 h-5 rounded-full p-1 transition-colors relative",
+                                                            useRealData ? "bg-lab-lime" : "bg-slate-700"
+                                                        )}>
+                                                            <div className={clsx(
+                                                                "w-3 h-3 rounded-full bg-white transition-transform shadow-sm",
+                                                                useRealData ? "translate-x-5" : "translate-x-0"
+                                                            )} />
+                                                        </div>
+                                                        <span className={clsx("text-[10px] font-bold transition-colors", useRealData ? "text-lab-lime" : "text-slate-600")}>OpenAI</span>
+                                                    </div>
+                                                </div>
+
+                                                <button
+                                                    type="button"
+                                                    onClick={async () => {
+                                                        const { generateSyntheticData, performSPCAnalysis } = await import("@/lib/api");
+                                                        setIsLoading(true);
+                                                        const genRes = await generateSyntheticData({
+                                                            matrix: result.matrix,
+                                                            context: methods.getValues("description") || "Standard scientific observation",
+                                                            mock: !useRealData
+                                                        });
+
+                                                        if (genRes && genRes.data) {
+                                                            const newMatrix = genRes.data;
+                                                            setResult({ ...result, matrix: newMatrix });
+                                                            const spcRes = await performSPCAnalysis({
+                                                                data: newMatrix,
+                                                                target_variable: "Response"
+                                                            });
+                                                            setSpcResult(spcRes);
+                                                        }
+                                                        setIsLoading(false);
+                                                    }}
+                                                    className={clsx(
+                                                        "w-full py-3 border rounded-xl text-sm font-bold transition-all flex items-center justify-center gap-2 shadow-lg",
+                                                        useRealData
+                                                            ? "bg-purple-500/10 hover:bg-purple-500/20 text-purple-400 border-purple-500/20 shadow-purple-900/10"
+                                                            : "bg-lab-lime/10 hover:bg-lab-lime/20 text-lab-lime border-lab-lime/20 shadow-lime-900/10"
+                                                    )}
+                                                >
+                                                    {isLoading ? "합성 데이터 생성 중..." : (useRealData ? "AI 기반 데이터 생성 시작" : "Mock 데이터 생성 시작")}
+                                                </button>
+                                            </div>
+
+                                            {/* Table */}
+                                            <div className="bg-black/30 rounded-xl border border-white/5 overflow-hidden">
+                                                <div className="overflow-x-auto max-h-60 custom-scrollbar">
+                                                    <table className="w-full text-xs text-left whitespace-nowrap">
+                                                        <thead className="bg-white/5 text-slate-400 sticky top-0 z-10 backdrop-blur-sm">
+                                                            <tr>
+                                                                {result.matrix && result.matrix.length > 0 ? Object.keys(result.matrix[0]).map(k => {
+                                                                    // Find matching variable to get color
+                                                                    const matchedVar = methods.getValues("variables").find(v => v.name === k);
+                                                                    const color = matchedVar?.color; // e.g. "#ff0000"
+
+                                                                    return (
+                                                                        <th
+                                                                            key={k}
+                                                                            className="px-3 py-2 font-mono border-b border-white/10"
+                                                                            style={color ? { color: color } : {}}
+                                                                        >
+                                                                            {k}
+                                                                        </th>
+                                                                    );
+                                                                }) : (
+                                                                    <th className="px-3 py-2 text-center text-slate-500 italic w-full">데이터 없음 (No Generated Data)</th>
+                                                                )}
+                                                            </tr>
+                                                        </thead>
+                                                        <tbody className="divide-y divide-white/5 font-mono text-slate-300">
+                                                            {(result.matrix || []).map((row: Record<string, unknown>, i: number) => (
+                                                                <tr key={i} className="hover:bg-white/[0.02]">
+                                                                    {Object.entries(row).map(([k, v], j) => {
+                                                                        if (k === 'synthetic_output') return null;
+                                                                        if (k === 'Observation') return <td key={j} className="px-3 py-2 max-w-[200px] truncate text-xs text-slate-500" title={String(v)}>{String(v)}</td>;
+                                                                        if (k === 'Response') return <td key={j} className="px-3 py-2 font-bold text-lab-lime">{String(v)}</td>;
+
+                                                                        // Apply subtle color tint to cell content if variable has color
+                                                                        const matchedVar = methods.getValues("variables").find(v => v.name === k);
+                                                                        const color = matchedVar?.color;
+
+                                                                        return (
+                                                                            <td
+                                                                                key={j}
+                                                                                className="px-3 py-2 max-w-[150px] truncate transition-colors"
+                                                                                title={String(v)}
+                                                                                style={color ? { color: color, opacity: 0.9 } : {}}
+                                                                            >
+                                                                                {String(v)}
+                                                                            </td>
+                                                                        );
+                                                                    })}
+                                                                </tr>
+                                                            ))}
+                                                        </tbody>
+                                                    </table>
+                                                </div>
+                                            </div>
+
+                                            {/* SPC Integration */}
+                                            {spcResult && (
+                                                <div className="pt-4 border-t border-white/5">
+                                                    <button
+                                                        type="button"
+                                                        onClick={() => {
+                                                            const spcData = {
+                                                                matrix: result.matrix,
+                                                                settings: methods.getValues(),
+                                                                spcResult: spcResult
+                                                            };
+                                                            sessionStorage.setItem('spc_analysis_data', JSON.stringify(spcData));
+                                                            window.open('/spc', '_blank');
+                                                        }}
+                                                        className="w-full py-3 bg-white/5 hover:bg-white/10 rounded-xl border border-white/10 text-sm font-bold transition-all flex items-center justify-center gap-2 group"
+                                                    >
+                                                        분포 상세 분석 (새 창)
+                                                        <ArrowRight className="w-4 h-4 transition-transform group-hover:translate-x-1" />
+                                                    </button>
+                                                </div>
                                             )}
-                                        >
-                                            {isLoading ? "합성 데이터 생성 중..." : (useRealData ? "AI 기반 데이터 생성 시작" : "Mock 데이터 생성 시작")}
-                                        </button>
-                                    </div>
-
-                                    {/* Table */}
-                                    <div className="bg-black/30 rounded-xl border border-white/5 overflow-hidden">
-                                        <div className="overflow-x-auto max-h-60 custom-scrollbar">
-                                            <table className="w-full text-xs text-left whitespace-nowrap">
-                                                <thead className="bg-white/5 text-slate-400 sticky top-0 z-10 backdrop-blur-sm">
-                                                    <tr>
-                                                        {result.matrix && result.matrix.length > 0 ? Object.keys(result.matrix[0]).map(k => {
-                                                            // Find matching variable to get color
-                                                            const matchedVar = methods.getValues("variables").find(v => v.name === k);
-                                                            const color = matchedVar?.color; // e.g. "#ff0000"
-
-                                                            return (
-                                                                <th
-                                                                    key={k}
-                                                                    className="px-3 py-2 font-mono border-b border-white/10"
-                                                                    style={color ? { color: color } : {}}
-                                                                >
-                                                                    {k}
-                                                                </th>
-                                                            );
-                                                        }) : (
-                                                            <th className="px-3 py-2 text-center text-slate-500 italic w-full">데이터 없음 (No Generated Data)</th>
-                                                        )}
-                                                    </tr>
-                                                </thead>
-                                                <tbody className="divide-y divide-white/5 font-mono text-slate-300">
-                                                    {(result.matrix || []).map((row: Record<string, unknown>, i: number) => (
-                                                        <tr key={i} className="hover:bg-white/[0.02]">
-                                                            {Object.entries(row).map(([k, v], j) => {
-                                                                if (k === 'synthetic_output') return null;
-                                                                if (k === 'Observation') return <td key={j} className="px-3 py-2 max-w-[200px] truncate text-xs text-slate-500" title={String(v)}>{String(v)}</td>;
-                                                                if (k === 'Response') return <td key={j} className="px-3 py-2 font-bold text-lab-lime">{String(v)}</td>;
-
-                                                                // Apply subtle color tint to cell content if variable has color
-                                                                const matchedVar = methods.getValues("variables").find(v => v.name === k);
-                                                                const color = matchedVar?.color;
-
-                                                                return (
-                                                                    <td
-                                                                        key={j}
-                                                                        className="px-3 py-2 max-w-[150px] truncate transition-colors"
-                                                                        title={String(v)}
-                                                                        style={color ? { color: color, opacity: 0.9 } : {}}
-                                                                    >
-                                                                        {String(v)}
-                                                                    </td>
-                                                                );
-                                                            })}
-                                                        </tr>
-                                                    ))}
-                                                </tbody>
-                                            </table>
-                                        </div>
-                                    </div>
-
-                                    {/* SPC Integration */}
-                                    {spcResult && (
-                                        <div className="pt-4 border-t border-white/5">
-                                            <button
-                                                type="button"
-                                                onClick={() => {
-                                                    const spcData = {
-                                                        matrix: result.matrix,
-                                                        settings: methods.getValues(),
-                                                        spcResult: spcResult
-                                                    };
-                                                    sessionStorage.setItem('spc_analysis_data', JSON.stringify(spcData));
-                                                    window.open('/spc', '_blank');
-                                                }}
-                                                className="w-full py-3 bg-white/5 hover:bg-white/10 rounded-xl border border-white/10 text-sm font-bold transition-all flex items-center justify-center gap-2 group"
-                                            >
-                                                분포 상세 분석 (새 창)
-                                                <ArrowRight className="w-4 h-4 transition-transform group-hover:translate-x-1" />
-                                            </button>
                                         </div>
                                     )}
-                                </div>
+                                </>
                             )}
                         </section>
                         {/* Full Report Container (Visible during export) */}

@@ -292,7 +292,7 @@ export default function AdvancedEstimationSection() {
                     </div>
 
                     {/* Hidden Report Container - Positioned behind content for capture */}
-                    <div style={{ position: 'fixed', top: 0, left: 0, zIndex: -50, visibility: 'visible', opacity: 0.01, pointerEvents: 'none' }} id="advanced-estimation-report">
+                    <div style={{ position: 'fixed', top: 0, left: '-3000px', zIndex: -50, visibility: 'visible', opacity: 1, pointerEvents: 'none' }} id="advanced-estimation-report">
                         <ReportView
                             title="Bayesian Parameter Estimation Report"
                             date={new Date().toLocaleDateString()}

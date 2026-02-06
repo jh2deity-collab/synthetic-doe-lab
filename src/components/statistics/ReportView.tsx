@@ -12,8 +12,8 @@ interface ReportViewProps {
 export const ReportView = ({ title, date, params, results, chartImage, insight }: ReportViewProps) => {
     return (
         <div style={{
-            width: '210mm',
-            minHeight: '297mm',
+            width: '297mm',
+            minHeight: '210mm',
             backgroundColor: '#ffffff',
             color: '#000000',
             padding: '20mm',

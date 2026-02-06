@@ -16,11 +16,11 @@ export const downloadPDF = async (elementId: string, fileName: string) => {
             pixelRatio: 2 // High quality
         });
 
-        // A4 Paper Size in mm (Portrait)
-        const pdfWidth = 210;
-        const pdfHeight = 297;
+        // A4 Paper Size in mm (Landscape)
+        const pdfWidth = 297;
+        const pdfHeight = 210;
 
-        const pdf = new jsPDF('p', 'mm', 'a4');
+        const pdf = new jsPDF('l', 'mm', 'a4');
 
         const imgProps = (pdf as any).getImageProperties(imgData);
         const imgHeight = (imgProps.height * pdfWidth) / imgProps.width;

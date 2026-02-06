@@ -52,7 +52,6 @@ export default function Home() {
                 className="inline-flex items-center justify-center gap-2 bg-white/5 border border-white/10 text-white px-8 py-4 rounded-full font-bold text-lg hover:bg-white/10 transition-all backdrop-blur-sm"
               >
                 DOE 분석
-                <ArrowRight className="w-5 h-5" />
               </Link>
             </div>
           </div>

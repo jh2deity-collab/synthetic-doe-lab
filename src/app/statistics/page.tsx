@@ -17,14 +17,18 @@ export default function StatisticsPage() {
             {/* Navbar */}
             <nav className="border-b border-white/5 backdrop-blur-md sticky top-0 z-50 bg-black/50">
                 <div className="max-w-7xl mx-auto px-6 h-16 flex items-center justify-between">
-                    <div className="flex items-center gap-2">
-                        <Link href="/" className="flex items-center gap-2 text-sm text-slate-400 hover:text-white transition-colors">
-                            <ArrowLeft className="w-4 h-4" />
-                            홈으로
+                    <div className="flex items-center gap-2 font-bold text-2xl tracking-tight">
+                        <Link href="/" className="flex items-center gap-2 hover:opacity-80 transition-opacity">
+                            <FlaskConical className="w-6 h-6 text-lab-lime" />
+                            <span>Synthetic <span className="text-lab-lime">DOE</span> Lab</span>
                         </Link>
                         <span className="text-slate-600 mx-2">/</span>
-                        <span className="font-bold text-white">Statistical Dashboard</span>
+                        <span className="text-white">Statistical Dashboard</span>
                     </div>
+                    <Link href="/" className="flex items-center gap-2 text-sm text-slate-400 hover:text-white transition-colors">
+                        <ArrowLeft className="w-4 h-4" />
+                        메인으로
+                    </Link>
                 </div>
             </nav>
 

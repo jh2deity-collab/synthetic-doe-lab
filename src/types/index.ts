@@ -65,3 +65,49 @@ export interface AnalysisPayload {
     results: Record<string, unknown>[];
     mock: boolean;
 }
+
+// --- Statistics Types ---
+
+export interface EstimationRequest {
+    data: number[];
+    confidence_level: number;
+}
+
+export interface EstimationResult {
+    mean: number;
+    std_dev: number;
+    n: number;
+    confidence_level: number;
+    lower_bound: number;
+    upper_bound: number;
+    margin_of_error: number;
+}
+
+export interface EffectSizeRequest {
+    group_a: number[];
+    group_b: number[];
+}
+
+export interface EffectSizeResult {
+    mean_a: number;
+    mean_b: number;
+    std_pooled: number;
+    cohens_d: number;
+    interpretation: string;
+}
+
+export interface AdvancedRequest {
+    data: number[];
+    prior_mean: number;
+    prior_std: number;
+}
+
+export interface AdvancedResult {
+    mle_mean: number;
+    mle_std: number;
+    map_mean: number;
+    map_std: number;
+    kde_x: number[];
+    kde_y: number[];
+}
+

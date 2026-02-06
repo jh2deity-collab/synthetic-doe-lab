@@ -1,5 +1,5 @@
 
-import { DesignConfig, SyntheticDataPayload, SPCAnalysisPayload, AnalysisPayload } from '@/types';
+import { DesignConfig, SyntheticDataPayload, SPCAnalysisPayload, AnalysisPayload, EstimationRequest, EstimationResult, EffectSizeRequest, EffectSizeResult, AdvancedRequest, AdvancedResult } from '@/types';
 
 const getApiBaseUrl = () => {
     // 1. If explicitly set in environment variables, use it
@@ -99,6 +99,54 @@ export const generateExpertAnalysis = async (payload: AnalysisPayload) => {
             throw new Error(`API Error ${res.status}: ${errText}`);
         }
 
+        return await res.json();
+    } catch (error) {
+        console.error("[API] Exception:", error);
+        throw error;
+    }
+};
+
+
+
+
+export const calculateEstimation = async (payload: EstimationRequest): Promise<EstimationResult> => {
+    try {
+        const res = await fetch(`${API_BASE_URL}/api/stats/estimation`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(payload),
+        });
+        if (!res.ok) throw new Error(`API Error: ${await res.text()}`);
+        return await res.json();
+    } catch (error) {
+        console.error("[API] Exception:", error);
+        throw error;
+    }
+};
+
+export const calculateEffectSize = async (payload: EffectSizeRequest): Promise<EffectSizeResult> => {
+    try {
+        const res = await fetch(`${API_BASE_URL}/api/stats/effect-size`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(payload),
+        });
+        if (!res.ok) throw new Error(`API Error: ${await res.text()}`);
+        return await res.json();
+    } catch (error) {
+        console.error("[API] Exception:", error);
+        throw error;
+    }
+};
+
+export const calculateAdvancedEstimation = async (payload: AdvancedRequest): Promise<AdvancedResult> => {
+    try {
+        const res = await fetch(`${API_BASE_URL}/api/stats/advanced`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(payload),
+        });
+        if (!res.ok) throw new Error(`API Error: ${await res.text()}`);
         return await res.json();
     } catch (error) {
         console.error("[API] Exception:", error);

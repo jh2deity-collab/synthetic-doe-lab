@@ -141,6 +141,43 @@ def generate_analysis_summary(request: AnalysisRequest):
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
+# --- Statistical Analysis Endpoints ---
+from .engine.stats import (
+    calculate_estimation, EstimationRequest, EstimationResult,
+    calculate_effect_size, EffectSizeRequest, EffectSizeResult,
+    calculate_advanced_estimation, AdvancedRequest, AdvancedResult
+)
+
+@app.post("/stats/estimation", response_model=EstimationResult)
+def get_estimation(request: EstimationRequest):
+    """
+    Calculates Point & Interval Estimation (Confidence Interval).
+    """
+    try:
+        return calculate_estimation(request)
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+@app.post("/stats/effect-size", response_model=EffectSizeResult)
+def get_effect_size(request: EffectSizeRequest):
+    """
+    Calculates Effect Size (Cohen's d).
+    """
+    try:
+        return calculate_effect_size(request)
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+@app.post("/stats/advanced", response_model=AdvancedResult)
+def get_advanced_estimation(request: AdvancedRequest):
+    """
+    Calculates MLE, MAP, and KDE for advanced parameter estimation.
+    """
+    try:
+        return calculate_advanced_estimation(request)
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
 
 
 from .engine.spc import analyze_spc, SPCAnalysisRequest, SPCResult

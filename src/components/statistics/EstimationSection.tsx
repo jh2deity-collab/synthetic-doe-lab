@@ -83,12 +83,53 @@ export default function EstimationSection() {
                     <Calculator className="w-5 h-5 text-lab-lime" />
                     점 추정 및 구간 추정
                 </h3>
-                max="0.99"
-                step="0.01"
-                value={confidenceLevel}
-                onChange={(e) => setConfidenceLevel(parseFloat(e.target.value))}
-                className="w-full h-2 bg-white/20 rounded-lg appearance-none cursor-pointer accent-lab-lime"
-                        />
+                <div className="grid md:grid-cols-2 gap-8">
+                    <div className="space-y-4">
+                        <div>
+                            <div className="flex justify-between items-center mb-1">
+                                <label className="block text-sm font-medium text-slate-300">
+                                    데이터 입력 (쉼표로 구분)
+                                </label>
+                                <button
+                                    onClick={() => fileInputRef.current?.click()}
+                                    className="flex items-center gap-1 text-xs text-lab-lime hover:text-lime-300 transition-colors"
+                                >
+                                    <Upload className="w-3 h-3" />
+                                    파일 업로드
+                                </button>
+                                <input
+                                    type="file"
+                                    ref={fileInputRef}
+                                    onChange={handleFileUpload}
+                                    accept=".csv,.xlsx,.xls,.txt"
+                                    className="hidden"
+                                />
+                            </div>
+                            <textarea
+                                value={dataInput}
+                                onChange={(e) => setDataInput(e.target.value)}
+                                className="w-full bg-black/30 border border-white/10 rounded-lg p-3 text-white h-32 focus:outline-none focus:border-lab-lime transition-colors"
+                                placeholder="예: 10, 12, 11, 13..."
+                            />
+                        </div>
+                    </div>
+                    <div>
+                        <label className="block text-sm font-medium text-slate-300 mb-1">
+                            신뢰수준 (Confidence Level): {Math.round(confidenceLevel * 100)}%
+                        </label>
+                        <div className="flex items-center h-full pb-8">
+                            <input
+                                type="range"
+                                min="0.90"
+                                max="0.99"
+                                step="0.01"
+                                value={confidenceLevel}
+                                onChange={(e) => setConfidenceLevel(parseFloat(e.target.value))}
+                                className="w-full h-2 bg-white/20 rounded-lg appearance-none cursor-pointer accent-lab-lime"
+                            />
+                        </div>
+                    </div>
+                </div>
             </div>
             <button
                 onClick={handleCalculate}

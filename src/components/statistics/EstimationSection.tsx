@@ -245,26 +245,24 @@ export default function EstimationSection() {
                     {/* Report Container: Masked by Overlay but visible to browser */}
                     {isGeneratingPdf && (
                         <div style={{ position: 'fixed', top: 0, left: 0, zIndex: 9000, backgroundColor: 'white' }}>
-                            <div id="estimation-report-page-1">
-                                <ReportView
-                                    title="통계적 추정 분석 리포트"
-                                    date={new Date().toLocaleDateString('ko-KR')}
-                                    params={[
-                                        { label: "신뢰 수준", value: `${result.confidence_level * 100}%` },
-                                        { label: "표본 크기 (N)", value: result.n }
-                                    ]}
-                                    results={[
-                                        { label: "표본 평균", value: result.mean.toFixed(4), highlight: true },
-                                        { label: "오차 한계", value: `±${result.margin_of_error.toFixed(4)}` },
-                                        { label: "신뢰구간 하한", value: result.lower_bound.toFixed(4) },
-                                        { label: "신뢰구간 상한", value: result.upper_bound.toFixed(4) },
-                                        { label: "표준 편차", value: result.std_dev.toFixed(4) }
-                                    ]}
-                                    chartImage={reportChartImg}
-                                    insight={`표본 데이터 (N=${result.n})를 기반으로 추정한 모집단 평균은 ${result.mean.toFixed(2)}입니다. ${result.confidence_level * 100}%의 신뢰도로 실제 모집단 평균이 ${result.lower_bound.toFixed(2)}와 ${result.upper_bound.toFixed(2)} 사이에 있다고 말할 수 있습니다. 오차 한계는 ±${result.margin_of_error.toFixed(2)}입니다.`}
-                                />
-                            </div>
-                            <div id="estimation-report-page-2" style={{ display: 'none' }}></div>
+                            <ReportView
+                                baseId="estimation-report"
+                                title="통계적 추정 분석 리포트"
+                                date={new Date().toLocaleDateString('ko-KR')}
+                                params={[
+                                    { label: "신뢰 수준", value: `${result.confidence_level * 100}%` },
+                                    { label: "표본 크기 (N)", value: result.n }
+                                ]}
+                                results={[
+                                    { label: "표본 평균", value: result.mean.toFixed(4), highlight: true },
+                                    { label: "오차 한계", value: `±${result.margin_of_error.toFixed(4)}` },
+                                    { label: "신뢰구간 하한", value: result.lower_bound.toFixed(4) },
+                                    { label: "신뢰구간 상한", value: result.upper_bound.toFixed(4) },
+                                    { label: "표준 편차", value: result.std_dev.toFixed(4) }
+                                ]}
+                                chartImage={reportChartImg}
+                                insight={`표본 데이터 (N=${result.n})를 기반으로 추정한 모집단 평균은 ${result.mean.toFixed(2)}입니다. ${result.confidence_level * 100}%의 신뢰도로 실제 모집단 평균이 ${result.lower_bound.toFixed(2)}와 ${result.upper_bound.toFixed(2)} 사이에 있다고 말할 수 있습니다. 오차 한계는 ±${result.margin_of_error.toFixed(2)}입니다.`}
+                            />
                         </div>
                     )}
                 </div>

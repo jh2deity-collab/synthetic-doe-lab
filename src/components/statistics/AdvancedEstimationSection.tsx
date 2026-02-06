@@ -307,24 +307,22 @@ export default function AdvancedEstimationSection() {
                     {/* Report Container (Masked) */}
                     {isGeneratingPdf && (
                         <div style={{ position: 'fixed', top: 0, left: 0, zIndex: 9000, backgroundColor: 'white' }}>
-                            <div id="advanced-estimation-report-page-1">
-                                <ReportView
-                                    title="베이지안 파라미터 추정 리포트"
-                                    date={new Date().toLocaleDateString('ko-KR')}
-                                    params={[
-                                        { label: "사전 평균", value: priorMean },
-                                        { label: "사전 표준편차", value: priorStd }
-                                    ]}
-                                    results={[
-                                        { label: "MLE 평균 (데이터)", value: result.mle_mean.toFixed(4) },
-                                        { label: "MAP 평균 (사후)", value: result.map_mean.toFixed(4), highlight: true },
-                                        { label: "사전 영향도", value: Math.abs(result.mle_mean - result.map_mean) < 0.05 ? "낮음" : "높음" }
-                                    ]}
-                                    chartImage={reportChartImg}
-                                    insight={`데이터만을 기반으로 한 최대우도추정(MLE)은 ${result.mle_mean.toFixed(3)}입니다. 사전 믿음(평균=${priorMean}, 표준편차=${priorStd})을 결합한 최대사후확률(MAP) 추정은 ${result.map_mean.toFixed(3)}입니다. MLE에서 MAP로의 이동은 사전 분포가 최종 추정에 미치는 영향을 나타냅니다.`}
-                                />
-                            </div>
-                            <div id="advanced-estimation-report-page-2" style={{ display: 'none' }}></div>
+                            <ReportView
+                                baseId="advanced-estimation-report"
+                                title="베이지안 파라미터 추정 리포트"
+                                date={new Date().toLocaleDateString('ko-KR')}
+                                params={[
+                                    { label: "사전 평균", value: priorMean },
+                                    { label: "사전 표준편차", value: priorStd }
+                                ]}
+                                results={[
+                                    { label: "MLE 평균 (데이터)", value: result.mle_mean.toFixed(4) },
+                                    { label: "MAP 평균 (사후)", value: result.map_mean.toFixed(4), highlight: true },
+                                    { label: "사전 영향도", value: Math.abs(result.mle_mean - result.map_mean) < 0.05 ? "낮음" : "높음" }
+                                ]}
+                                chartImage={reportChartImg}
+                                insight={`데이터만을 기반으로 한 최대우도추정(MLE)은 ${result.mle_mean.toFixed(3)}입니다. 사전 믿음(평균=${priorMean}, 표준편차=${priorStd})을 결합한 최대사후확률(MAP) 추정은 ${result.map_mean.toFixed(3)}입니다. MLE에서 MAP로의 이동은 사전 분포가 최종 추정에 미치는 영향을 나타냅니다.`}
+                            />
                         </div>
                     )}
                 </div>

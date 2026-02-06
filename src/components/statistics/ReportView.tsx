@@ -1,6 +1,7 @@
 import React from 'react';
 
 interface ReportViewProps {
+    baseId: string; // Base ID for page elements (e.g., "estimation-report")
     title: string;
     date: string;
     params: { label: string; value: string | number }[];
@@ -9,11 +10,11 @@ interface ReportViewProps {
     insight: string;
 }
 
-export const ReportView = ({ title, date, params, results, chartImage, insight }: ReportViewProps) => {
+export const ReportView = ({ baseId, title, date, params, results, chartImage, insight }: ReportViewProps) => {
     return (
         <>
             {/* Page 1: Summary and Results */}
-            <div id="report-page-1" style={{
+            <div id={`${baseId}-page-1`} style={{
                 width: '297mm',
                 height: '210mm',
                 backgroundColor: '#ffffff',
@@ -176,7 +177,7 @@ export const ReportView = ({ title, date, params, results, chartImage, insight }
             </div>
 
             {/* Page 2: Visualization */}
-            <div id="report-page-2" style={{
+            <div id={`${baseId}-page-2`} style={{
                 width: '297mm',
                 height: '210mm',
                 backgroundColor: '#ffffff',

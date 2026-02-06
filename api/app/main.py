@@ -15,9 +15,31 @@ app = FastAPI(
     description="API for Smart Design of Experiments and Synthetic Data Generation",
     version="0.1.0",
     root_path="/api" if os.getenv("VERCEL") else "",  # Dynamic root_path: /api for Vercel, empty for local
-    docs_url="/docs",  # Accessible at /api/docs or /docs
-    openapi_url="/openapi.json" # Accessible at /api/openapi.json
+    docs_url="/docs",
+    openapi_url="/openapi.json",
+    redirect_slashes=False  # CRITICAL: Prevent 307 redirects which change method to GET
 )
+
+from fastapi.responses import JSONResponse
+from fastapi.exceptions import RequestValidationError
+from starlette.exceptions import HTTPException as StarletteHTTPException
+
+@app.exception_handler(405)
+async def custom_405_handler(request: Request, exc):
+    return JSONResponse(
+        status_code=405,
+        content={
+            "error": "Method Not Allowed",
+            "detail": f"Method {request.method} not allowed for URL {request.url.path}",
+            "allowed_methods": ["POST"] if request.url.path.endswith(("/design", "/generate", "/analysis", "/spc")) else ["GET"],
+            "debug_info": {
+                "url": str(request.url),
+                "base_url": str(request.base_url),
+                "method": request.method,
+                "headers": dict(request.headers)
+            }
+        },
+    )
 
 # CORS Setup
 # CORS Setup - Reverted to allow all for troubleshooting connectivity

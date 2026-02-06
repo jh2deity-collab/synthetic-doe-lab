@@ -261,7 +261,18 @@ export default function EstimationSection() {
                                     { label: "표준 편차", value: result.std_dev.toFixed(4) }
                                 ]}
                                 chartImage={reportChartImg}
-                                insight={`표본 데이터 (N=${result.n})를 기반으로 추정한 모집단 평균은 ${result.mean.toFixed(2)}입니다. ${result.confidence_level * 100}%의 신뢰도로 실제 모집단 평균이 ${result.lower_bound.toFixed(2)}와 ${result.upper_bound.toFixed(2)} 사이에 있다고 말할 수 있습니다. 오차 한계는 ±${result.margin_of_error.toFixed(2)}입니다.`}
+                                insight={`이 분석은 ${result.n}개의 샘플 데이터를 조사하여 전체 데이터의 평균을 추정한 결과입니다.
+
+📊 핵심 결과:
+• 측정된 평균값: ${result.mean.toFixed(2)}
+• 신뢰 구간: ${result.lower_bound.toFixed(2)} ~ ${result.upper_bound.toFixed(2)}
+• 오차 범위: ±${result.margin_of_error.toFixed(2)}
+
+💡 쉬운 해석:
+${result.n}개의 샘플을 조사한 결과, 평균값은 ${result.mean.toFixed(2)}로 나타났습니다. 통계적으로 ${result.confidence_level * 100}%의 확률로 실제 전체 데이터의 평균은 ${result.lower_bound.toFixed(2)}에서 ${result.upper_bound.toFixed(2)} 사이에 있을 것으로 예상됩니다. 이는 우리의 추정이 ±${result.margin_of_error.toFixed(2)} 정도의 오차를 가질 수 있다는 의미입니다.
+
+🎯 실용적 의미:
+만약 이 데이터가 제품 만족도라면, 고객들의 실제 만족도는 95% 확률로 ${result.lower_bound.toFixed(2)}점에서 ${result.upper_bound.toFixed(2)}점 사이라고 자신있게 말할 수 있습니다.`}
                             />
                         </div>
                     )}

@@ -22,33 +22,32 @@ export const downloadPDF = async (baseElementId: string, fileName: string) => {
 
         const page1ImgData = await toPng(page1Element, {
             backgroundColor: '#ffffff',
-            pixelRatio: 2
+            pixelRatio: 2,
+            cacheBust: true
         });
 
-        const page1ImgProps = (pdf as any).getImageProperties(page1ImgData);
-        const page1ImgHeight = (page1ImgProps.height * pdfWidth) / page1ImgProps.width;
-
-        pdf.addImage(page1ImgData, 'PNG', 0, 0, pdfWidth, Math.min(page1ImgHeight, pdfHeight));
+        // Add page 1 - fit to page width
+        pdf.addImage(page1ImgData, 'PNG', 0, 0, pdfWidth, pdfHeight, undefined, 'FAST');
 
         // Capture Page 2
         const page2Element = document.getElementById(`${baseElementId}-page-2`);
         if (page2Element) {
             const page2ImgData = await toPng(page2Element, {
                 backgroundColor: '#ffffff',
-                pixelRatio: 2
+                pixelRatio: 2,
+                cacheBust: true
             });
 
             pdf.addPage();
-            const page2ImgProps = (pdf as any).getImageProperties(page2ImgData);
-            const page2ImgHeight = (page2ImgProps.height * pdfWidth) / page2ImgProps.width;
-
-            pdf.addImage(page2ImgData, 'PNG', 0, 0, pdfWidth, Math.min(page2ImgHeight, pdfHeight));
+            // Add page 2 - fit to page width
+            pdf.addImage(page2ImgData, 'PNG', 0, 0, pdfWidth, pdfHeight, undefined, 'FAST');
         }
 
         // Download the PDF
         pdf.save(fileName);
     } catch (error) {
         console.error('PDF generation failed:', error);
+        alert('PDF 생성 중 오류가 발생했습니다. 다시 시도해주세요.');
         throw error;
     }
 };

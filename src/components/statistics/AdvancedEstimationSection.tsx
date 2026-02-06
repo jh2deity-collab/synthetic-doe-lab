@@ -116,7 +116,7 @@ export default function AdvancedEstimationSection() {
             // 2. Wait for ReportView to render with image (short delay)
             setTimeout(() => {
                 downloadPDF("advanced-estimation-report", "Bayesian_Estimation_Report.pdf");
-            }, 100);
+            }, 500);
 
         } catch (e) {
             console.error("PDF Fail", e);
@@ -292,7 +292,7 @@ export default function AdvancedEstimationSection() {
                     </div>
 
                     {/* Hidden Report Container - Positioned behind content for capture */}
-                    <div style={{ position: 'fixed', top: 0, left: '-3000px', zIndex: -50, visibility: 'visible', opacity: 1, pointerEvents: 'none' }} id="advanced-estimation-report">
+                    <div style={{ position: 'absolute', top: 0, left: 0, zIndex: -50, opacity: 0, pointerEvents: 'none' }} id="advanced-estimation-report">
                         <ReportView
                             title="Bayesian Parameter Estimation Report"
                             date={new Date().toLocaleDateString()}

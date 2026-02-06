@@ -100,7 +100,7 @@ export default function EffectSizeSection() {
             // 2. Wait for ReportView to render with image (short delay)
             setTimeout(() => {
                 downloadPDF("effect-size-report", "EffectSize_Report.pdf");
-            }, 100);
+            }, 500);
 
         } catch (e) {
             console.error("PDF Fail", e);
@@ -263,7 +263,7 @@ export default function EffectSizeSection() {
                     </div>
 
                     {/* Hidden Report Container - Positioned behind content for capture */}
-                    <div style={{ position: 'fixed', top: 0, left: '-3000px', zIndex: -50, visibility: 'visible', opacity: 1, pointerEvents: 'none' }} id="effect-size-report">
+                    <div style={{ position: 'absolute', top: 0, left: 0, zIndex: -50, opacity: 0, pointerEvents: 'none' }} id="effect-size-report">
                         <ReportView
                             title="Effect Size Analysis Report"
                             date={new Date().toLocaleDateString()}

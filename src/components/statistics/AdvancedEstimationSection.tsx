@@ -323,6 +323,7 @@ export default function AdvancedEstimationSection() {
                                 insight={`The Maximum Likelihood Estimate (MLE) based solely on data is ${result.mle_mean.toFixed(3)}. Incorporating prior beliefs (Mean=${priorMean}, Std=${priorStd}), the Maximum A Posteriori (MAP) estimate is ${result.map_mean.toFixed(3)}. The shift from MLE to MAP indicates the influence of the prior distribution on the final estimate.`}
                             />
                         </div>
+                    )}
                 </div>
             )}
         </div>

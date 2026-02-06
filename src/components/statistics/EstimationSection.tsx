@@ -58,26 +58,40 @@ export default function EstimationSection() {
         }
     };
 
+    const [isGeneratingPdf, setIsGeneratingPdf] = useState(false);
+
     const handleDownloadPDF = async () => {
         if (!result || !chartRef.current) return;
 
         try {
-            // 1. Capture Chart using html-to-image
+            setIsGeneratingPdf(true);
+
+            // 1. Capture Chart
             const imgData = await toPng(chartRef.current, { backgroundColor: '#1e293b', pixelRatio: 2 });
             setReportChartImg(imgData);
 
-            // 2. Wait for ReportView to render with image (short delay)
-            setTimeout(() => {
-                downloadPDF("estimation-report", "Estimation_Report.pdf");
-            }, 500);
+            // 2. Wait for render (using overlay strategy)
+            setTimeout(async () => {
+                await downloadPDF("estimation-report", "Estimation_Report.pdf");
+                setIsGeneratingPdf(false);
+            }, 1000);
 
         } catch (e) {
             console.error("PDF Fail", e);
+            setIsGeneratingPdf(false);
         }
     };
 
     return (
         <div className="space-y-8 relative">
+            {isGeneratingPdf && (
+                <div className="fixed inset-0 z-[9999] bg-black/90 flex flex-col items-center justify-center text-white">
+                    <Loader2 className="w-12 h-12 animate-spin text-lab-lime mb-4" />
+                    <p className="text-xl font-bold">PDF 리포트 생성 중...</p>
+                    <p className="text-slate-400 text-sm mt-2">잠시만 기다려주세요.</p>
+                </div>
+            )}
+
             <div className="bg-white/5 border border-white/10 p-6 rounded-2xl">
                 <h3 className="text-xl font-bold mb-4 flex items-center gap-2">
                     <Calculator className="w-5 h-5 text-lab-lime" />
@@ -133,7 +147,7 @@ export default function EstimationSection() {
             </div>
             <button
                 onClick={handleCalculate}
-                disabled={loading}
+                disabled={loading || isGeneratingPdf}
                 className="w-full bg-lab-lime text-lab-dark font-bold py-3 rounded-xl hover:bg-lime-400 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
             >
                 {loading ? <Loader2 className="animate-spin" /> : "분석 실행"}
@@ -150,9 +164,10 @@ export default function EstimationSection() {
                         <h4 className="text-lg font-bold text-white">분석 결과</h4>
                         <button
                             onClick={handleDownloadPDF}
+                            disabled={isGeneratingPdf}
                             className="flex items-center gap-2 px-4 py-2 bg-white/10 hover:bg-white/20 text-white rounded-lg transition-colors text-sm font-bold border border-white/10"
                         >
-                            <FileDown className="w-4 h-4" />
+                            {isGeneratingPdf ? <Loader2 className="w-4 h-4 animate-spin" /> : <FileDown className="w-4 h-4" />}
                             PDF 리포트 저장
                         </button>
                     </div>
@@ -227,29 +242,35 @@ export default function EstimationSection() {
                         <strong> {result.lower_bound.toFixed(2)}</strong>와 <strong>{result.upper_bound.toFixed(2)}</strong> 사이에 있다고 추정할 수 있습니다.
                     </div>
 
-                    {/* Hidden Report Container - Positioned behind content for capture */}
-                    <div style={{ position: 'absolute', top: 0, left: 0, zIndex: -50, opacity: 0, pointerEvents: 'none' }} id="estimation-report">
-                        <ReportView
-                            title="Statistical Estimation Report"
-                            date={new Date().toLocaleDateString()}
-                            params={[
-                                { label: "Confidence Level", value: `${result.confidence_level * 100}%` },
-                                { label: "Sample Size (N)", value: result.n }
-                            ]}
-                            results={[
-                                { label: "Sample Mean", value: result.mean.toFixed(4), highlight: true },
-                                { label: "Margin of Error", value: `±${result.margin_of_error.toFixed(4)}` },
-                                { label: "CI Lower Bound", value: result.lower_bound.toFixed(4) },
-                                { label: "CI Upper Bound", value: result.upper_bound.toFixed(4) },
-                                { label: "Standard Deviation", value: result.std_dev.toFixed(4) }
-                            ]}
-                            chartImage={reportChartImg}
-                            insight={`Based on the sample data (N=${result.n}), the estimated population mean is ${result.mean.toFixed(2)}. We can state with ${result.confidence_level * 100}% confidence that the true population mean lies between ${result.lower_bound.toFixed(2)} and ${result.upper_bound.toFixed(2)}. The margin of error is ±${result.margin_of_error.toFixed(2)}.`}
-                        />
-                    </div>
-                </div>
-            )
-            }
+                    {/* Report Container: Masked by Overlay but visible to browser */}
+                    {isGeneratingPdf && (
+                        <div style={{ position: 'fixed', top: 0, left: 0, zIndex: 9000, backgroundColor: 'white' }}>
+                            <div id="estimation-report-page-1">
+                                <ReportView
+                                    title="통계적 추정 분석 리포트"
+                                    date={new Date().toLocaleDateString('ko-KR')}
+                                    params={[
+                                        { label: "신뢰 수준", value: `${result.confidence_level * 100}%` },
+                                        { label: "표본 크기 (N)", value: result.n }
+                                    ]}
+                                    results={[
+                                        { label: "표본 평균", value: result.mean.toFixed(4), highlight: true },
+                                        { label: "오차 한계", value: `±${result.margin_of_error.toFixed(4)}` },
+                                        { label: "신뢰구간 하한", value: result.lower_bound.toFixed(4) },
+                                        { label: "신뢰구간 상한", value: result.upper_bound.toFixed(4) },
+                                        { label: "표준 편차", value: result.std_dev.toFixed(4) }
+                                    ]}
+                                    chartImage={reportChartImg}
+                                    insight={`표본 데이터 (N=${result.n})를 기반으로 추정한 모집단 평균은 ${result.mean.toFixed(2)}입니다. ${result.confidence_level * 100}%의 신뢰도로 실제 모집단 평균이 ${result.lower_bound.toFixed(2)}와 ${result.upper_bound.toFixed(2)} 사이에 있다고 말할 수 있습니다. 오차 한계는 ±${result.margin_of_error.toFixed(2)}입니다.`}
+                                />
+                            </div>
+                            <div id="estimation-report-page-2" style={{ display: 'none' }}></div>
+                        </div>
+                        </div>
+            )}
+        </div>
+    )
+}
         </div >
     );
 }

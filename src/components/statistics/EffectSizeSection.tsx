@@ -104,7 +104,7 @@ export default function EffectSizeSection() {
             setTimeout(async () => {
                 await downloadPDF("effect-size-report", "EffectSize_Report.pdf");
                 setIsGeneratingPdf(false);
-            }, 800);
+            }, 1000);
 
         } catch (e) {
             console.error("PDF Fail", e);
@@ -277,26 +277,31 @@ export default function EffectSizeSection() {
 
                     {/* Report Container (Masked) */}
                     {isGeneratingPdf && (
-                        <div style={{ position: 'fixed', top: 0, left: 0, zIndex: 9000, backgroundColor: 'white' }} id="effect-size-report">
-                            <ReportView
-                                title="Effect Size Analysis Report"
-                                date={new Date().toLocaleDateString()}
-                                params={[
-                                    { label: "Group A Mean", value: result.mean_a.toFixed(2) },
-                                    { label: "Group B Mean", value: result.mean_b.toFixed(2) }
-                                ]}
-                                results={[
-                                    { label: "Cohen's d", value: result.cohens_d.toFixed(4), highlight: true },
-                                    { label: "Interpretation", value: result.interpretation },
-                                    { label: "Pooled Std Dev", value: result.std_pooled.toFixed(4) }
-                                ]}
-                                chartImage={reportChartImg}
-                                insight={`The calculated Cohen's d is ${result.cohens_d.toFixed(2)}, which indicates a "${result.interpretation}" between the two groups. The mean difference is ${Math.abs(result.mean_a - result.mean_b).toFixed(2)}.`}
-                            />
+                        <div style={{ position: 'fixed', top: 0, left: 0, zIndex: 9000, backgroundColor: 'white' }}>
+                            <div id="effect-size-report-page-1">
+                                <ReportView
+                                    title="효과 크기 분석 리포트"
+                                    date={new Date().toLocaleDateString('ko-KR')}
+                                    params={[
+                                        { label: "그룹 A 평균", value: result.mean_a.toFixed(2) },
+                                        { label: "그룹 B 평균", value: result.mean_b.toFixed(2) }
+                                    ]}
+                                    results={[
+                                        { label: "Cohen's d", value: result.cohens_d.toFixed(4), highlight: true },
+                                        { label: "해석", value: result.interpretation },
+                                        { label: "통합 표준편차", value: result.std_pooled.toFixed(4) }
+                                    ]}
+                                    chartImage={reportChartImg}
+                                    insight={`계산된 Cohen's d는 ${result.cohens_d.toFixed(2)}이며, 이는 두 그룹 간 "${result.interpretation}" 효과 크기를 나타냅니다. 평균 차이는 ${Math.abs(result.mean_a - result.mean_b).toFixed(2)}입니다.`}
+                                />
+                            </div>
+                            <div id="effect-size-report-page-2" style={{ display: 'none' }}></div>
                         </div>
-                    )}
-                </div>
+                        </div>
             )}
         </div>
+    )
+}
+        </div >
     );
 }

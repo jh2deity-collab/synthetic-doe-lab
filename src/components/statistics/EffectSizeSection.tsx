@@ -204,8 +204,8 @@ export default function EffectSizeSection() {
                         {Math.abs(result.cohens_d) < 0.2 && " 차이가 미미하여 우연에 의한 것일 수 있습니다."}
                     </div>
 
-                    {/* Hidden Report Container */}
-                    <div style={{ position: 'fixed', top: 0, left: '-9999px', zIndex: -1 }} id="effect-size-report">
+                    {/* Hidden Report Container - Positioned behind content for capture */}
+                    <div style={{ position: 'fixed', top: 0, left: 0, zIndex: -50, visibility: 'visible', opacity: 0.01, pointerEvents: 'none' }} id="effect-size-report">
                         <ReportView
                             title="Effect Size Analysis Report"
                             date={new Date().toLocaleDateString()}

@@ -186,8 +186,8 @@ export default function EstimationSection() {
                         <strong> {result.lower_bound.toFixed(2)}</strong>와 <strong>{result.upper_bound.toFixed(2)}</strong> 사이에 있다고 추정할 수 있습니다.
                     </div>
 
-                    {/* Hidden Report Container */}
-                    <div style={{ position: 'fixed', top: 0, left: '-9999px', zIndex: -1 }} id="estimation-report">
+                    {/* Hidden Report Container - Positioned behind content for capture */}
+                    <div style={{ position: 'fixed', top: 0, left: 0, zIndex: -50, visibility: 'visible', opacity: 0.01, pointerEvents: 'none' }} id="estimation-report">
                         <ReportView
                             title="Statistical Estimation Report"
                             date={new Date().toLocaleDateString()}

@@ -22,7 +22,7 @@ export const downloadPDF = async (elementId: string, fileName: string) => {
 
         const pdf = new jsPDF('p', 'mm', 'a4');
 
-        const imgProps = pdf.getImageProperties(imgData);
+        const imgProps = (pdf as any).getImageProperties(imgData);
         const imgHeight = (imgProps.height * pdfWidth) / imgProps.width;
 
         let heightLeft = imgHeight;

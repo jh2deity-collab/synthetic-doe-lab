@@ -13,7 +13,6 @@ export default function Home() {
           </div>
           <div className="hidden md:flex gap-8 text-lg font-medium text-slate-400">
             <a href="#features" className="hover:text-white transition-colors">기능 소개</a>
-            <Link href="/statistics" className="hover:text-lab-lime transition-colors">통계 분석</Link>
             <a href="#about" className="hover:text-white transition-colors">프로젝트 소개</a>
           </div>
 

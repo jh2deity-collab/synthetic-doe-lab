@@ -1,0 +1,9 @@
+# Ignore the old frontend folder structure
+frontend/
+
+# Ignore backend folder (not needed for build)
+backend/
+
+# Ignore local development files
+.env.local
+*.log

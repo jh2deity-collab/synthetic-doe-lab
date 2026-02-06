@@ -11,7 +11,12 @@ const nextConfig: NextConfig = {
         },
       ];
     }
-    return [];
+    return [
+      {
+        source: "/api/:path*",
+        destination: "/api/index", // Proxy to Vercel Function in production
+      }
+    ];
   },
 };
 

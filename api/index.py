@@ -18,7 +18,7 @@ except Exception as e:
     
     app = FastAPI()
     
-    @app.get("/{path:path}")
+    @app.api_route("/{path:path}", methods=["GET", "POST", "PUT", "DELETE", "OPTIONS", "HEAD", "PATCH"])
     async def error_handler(path: str):
         return JSONResponse({
             "error": "Backend import failed",

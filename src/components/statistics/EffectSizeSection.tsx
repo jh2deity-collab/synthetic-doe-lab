@@ -206,7 +206,7 @@ export default function EffectSizeSection() {
                     </div>
 
                     {/* Hidden Report Container */}
-                    <div className="fixed top-0 left-[-9999px] z-[-1]" id="effect-size-report">
+                    <div style={{ position: 'fixed', top: 0, left: '-9999px', zIndex: -1 }} id="effect-size-report">
                         <ReportView
                             title="Effect Size Analysis Report"
                             date={new Date().toLocaleDateString()}

@@ -188,7 +188,7 @@ export default function EstimationSection() {
                     </div>
 
                     {/* Hidden Report Container */}
-                    <div className="fixed top-0 left-[-9999px] z-[-1]" id="estimation-report">
+                    <div style={{ position: 'fixed', top: 0, left: '-9999px', zIndex: -1 }} id="estimation-report">
                         <ReportView
                             title="Statistical Estimation Report"
                             date={new Date().toLocaleDateString()}

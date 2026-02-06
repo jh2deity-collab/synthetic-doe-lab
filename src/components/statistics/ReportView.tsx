@@ -1,5 +1,4 @@
 import React from 'react';
-import { FlaskConical } from 'lucide-react';
 
 interface ReportViewProps {
     title: string;
@@ -42,7 +41,7 @@ export const ReportView = ({ title, date, params, results, chartImage, insight }
                         color: '#000000',
                         marginBottom: '8px'
                     }}>
-                        <FlaskConical style={{ width: '24px', height: '24px', color: '#000000' }} />
+                        {/* Icon removed to prevent SVG color parsing errors */}
                         <span>Synthetic <span style={{ color: '#65a30d' }}>DOE</span> Lab</span>
                     </div>
                     <div style={{ fontSize: '14px', color: '#6b7280' }}>AI-Powered Experimental Design & Analysis Platform</div>

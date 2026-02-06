@@ -54,6 +54,13 @@ export default function Home() {
               >
                 DOE 분석
               </Link>
+              <Link
+                href="/statistics"
+                className="inline-flex items-center justify-center gap-2 bg-purple-500 text-white px-8 py-4 rounded-full font-bold text-lg hover:bg-purple-400 transition-all shadow-[0_0_20px_rgba(168,85,247,0.3)] hover:shadow-[0_0_30px_rgba(168,85,247,0.5)] transform hover:-translate-y-1"
+              >
+                <BarChart3 className="w-5 h-5" />
+                통계 분석
+              </Link>
             </div>
           </div>
 

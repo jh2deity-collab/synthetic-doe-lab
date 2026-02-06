@@ -9,6 +9,8 @@ import { toPng } from "html-to-image";
 import { downloadPDF } from "@/lib/reportUtils";
 import { ReportView } from "./ReportView";
 import { parseDataFile } from "@/lib/fileParser";
+import ARIMAAnalysis from "./ARIMAAnalysis";
+import ProphetAnalysis from "./ProphetAnalysis";
 
 export default function AdvancedEstimationSection() {
     const [dataInput, setDataInput] = useState<string>("5.1, 4.9, 5.2, 5.8, 4.8, 5.1, 5.3, 5.0");
@@ -23,6 +25,9 @@ export default function AdvancedEstimationSection() {
     const [reportChartImg, setReportChartImg] = useState<string | undefined>(undefined);
     const chartRef = useRef<HTMLDivElement>(null);
     const fileInputRef = useRef<HTMLInputElement>(null);
+
+    // Tab State
+    const [activeTab, setActiveTab] = useState<'bayesian' | 'arima' | 'prophet'>('bayesian');
 
     const handleCalculate = async () => {
         setLoading(true);
@@ -153,91 +158,128 @@ export default function AdvancedEstimationSection() {
                     <p className="text-slate-400 text-sm mt-2">잠시만 기다려주세요.</p>
                 </div>
             )}
-            <div className="bg-white/5 border border-white/10 p-6 rounded-2xl">
-                <h3 className="text-xl font-bold mb-4 flex items-center gap-2">
-                    <BrainCircuit className="w-5 h-5 text-blue-400" />
-                    베이지안 추정 설정
-                </h3>
-                <div className="grid md:grid-cols-2 gap-8">
-                    <div className="space-y-4">
-                        <div>
-                            <div className="flex justify-between items-center mb-1">
-                                <label className="block text-sm font-medium text-slate-300">
-                                    관측 데이터 (Data)
-                                </label>
-                                <button
-                                    onClick={() => fileInputRef.current?.click()}
-                                    className="flex items-center gap-1 text-xs text-blue-400 hover:text-blue-300 transition-colors"
-                                >
-                                    <Upload className="w-3 h-3" />
-                                    파일 업로드
-                                </button>
-                                <input
-                                    type="file"
-                                    ref={fileInputRef}
-                                    onChange={handleFileUpload}
-                                    accept=".csv,.xlsx,.xls,.txt"
-                                    className="hidden"
+
+            {/* Tab Navigation */}
+            <div className="bg-white/5 border border-white/10 rounded-2xl p-2">
+                <div className="flex gap-2">
+                    <button
+                        onClick={() => setActiveTab('bayesian')}
+                        className={`flex-1 py-3 px-4 rounded-lg font-semibold transition-all duration-200 ${activeTab === 'bayesian'
+                            ? 'bg-gradient-to-r from-blue-500 to-purple-600 text-white shadow-lg'
+                            : 'bg-white/5 text-slate-400 hover:bg-white/10 hover:text-white'
+                            }`}
+                    >
+                        <BrainCircuit className="w-5 h-5 inline-block mr-2" />
+                        베이지안 추정
+                    </button>
+                    <button
+                        onClick={() => setActiveTab('arima')}
+                        className={`flex-1 py-3 px-4 rounded-lg font-semibold transition-all duration-200 ${activeTab === 'arima'
+                            ? 'bg-gradient-to-r from-lime-500 to-green-600 text-white shadow-lg'
+                            : 'bg-white/5 text-slate-400 hover:bg-white/10 hover:text-white'
+                            }`}
+                    >
+                        📈 ARIMA
+                    </button>
+                    <button
+                        onClick={() => setActiveTab('prophet')}
+                        className={`flex-1 py-3 px-4 rounded-lg font-semibold transition-all duration-200 ${activeTab === 'prophet'
+                            ? 'bg-gradient-to-r from-purple-500 to-pink-600 text-white shadow-lg'
+                            : 'bg-white/5 text-slate-400 hover:bg-white/10 hover:text-white'
+                            }`}
+                    >
+                        ✨ Prophet
+                    </button>
+                </div>
+            </div>
+
+            {/* Tab Content */}
+            {activeTab === 'bayesian' && (
+                <div className="bg-white/5 border border-white/10 p-6 rounded-2xl">
+                    <h3 className="text-xl font-bold mb-4 flex items-center gap-2">
+                        <BrainCircuit className="w-5 h-5 text-blue-400" />
+                        베이지안 추정 설정
+                    </h3>
+                    <div className="grid md:grid-cols-2 gap-8">
+                        <div className="space-y-4">
+                            <div>
+                                <div className="flex justify-between items-center mb-1">
+                                    <label className="block text-sm font-medium text-slate-300">
+                                        관측 데이터 (Data)
+                                    </label>
+                                    <button
+                                        onClick={() => fileInputRef.current?.click()}
+                                        className="flex items-center gap-1 text-xs text-blue-400 hover:text-blue-300 transition-colors"
+                                    >
+                                        <Upload className="w-3 h-3" />
+                                        파일 업로드
+                                    </button>
+                                    <input
+                                        type="file"
+                                        ref={fileInputRef}
+                                        onChange={handleFileUpload}
+                                        accept=".csv,.xlsx,.xls,.txt"
+                                        className="hidden"
+                                    />
+                                </div>
+                                <textarea
+                                    value={dataInput}
+                                    onChange={(e) => setDataInput(e.target.value)}
+                                    className="w-full bg-black/30 border border-white/10 rounded-lg p-3 text-white h-24 focus:outline-none focus:border-blue-400 transition-colors"
                                 />
                             </div>
-                            <textarea
-                                value={dataInput}
-                                onChange={(e) => setDataInput(e.target.value)}
-                                className="w-full bg-black/30 border border-white/10 rounded-lg p-3 text-white h-24 focus:outline-none focus:border-blue-400 transition-colors"
-                            />
                         </div>
-                    </div>
-                    <div className="space-y-6">
-                        <div className="bg-blue-900/10 p-4 rounded-xl border border-blue-500/20">
-                            <div className="text-sm font-bold text-blue-300 mb-4">사전 믿음 (Prior Belief)</div>
-                            <div className="space-y-4">
-                                <div>
-                                    <div className="flex justify-between text-xs mb-1 text-slate-400">
-                                        <span>예상 평균 (Prior Mean)</span>
-                                        <span>{priorMean}</span>
+                        <div className="space-y-6">
+                            <div className="bg-blue-900/10 p-4 rounded-xl border border-blue-500/20">
+                                <div className="text-sm font-bold text-blue-300 mb-4">사전 믿음 (Prior Belief)</div>
+                                <div className="space-y-4">
+                                    <div>
+                                        <div className="flex justify-between text-xs mb-1 text-slate-400">
+                                            <span>예상 평균 (Prior Mean)</span>
+                                            <span>{priorMean}</span>
+                                        </div>
+                                        <input
+                                            type="range"
+                                            min="0"
+                                            max="10"
+                                            step="0.1"
+                                            value={priorMean}
+                                            onChange={(e) => setPriorMean(parseFloat(e.target.value))}
+                                            className="w-full h-2 bg-white/20 rounded-lg appearance-none cursor-pointer accent-blue-400"
+                                        />
                                     </div>
-                                    <input
-                                        type="range"
-                                        min="0"
-                                        max="10"
-                                        step="0.1"
-                                        value={priorMean}
-                                        onChange={(e) => setPriorMean(parseFloat(e.target.value))}
-                                        className="w-full h-2 bg-white/20 rounded-lg appearance-none cursor-pointer accent-blue-400"
-                                    />
-                                </div>
-                                <div>
-                                    <div className="flex justify-between text-xs mb-1 text-slate-400">
-                                        <span>불확실성 (Prior Std Dev)</span>
-                                        <span>{priorStd}</span>
+                                    <div>
+                                        <div className="flex justify-between text-xs mb-1 text-slate-400">
+                                            <span>불확실성 (Prior Std Dev)</span>
+                                            <span>{priorStd}</span>
+                                        </div>
+                                        <input
+                                            type="range"
+                                            min="0.1"
+                                            max="5"
+                                            step="0.1"
+                                            value={priorStd}
+                                            onChange={(e) => setPriorStd(parseFloat(e.target.value))}
+                                            className="w-full h-2 bg-white/20 rounded-lg appearance-none cursor-pointer accent-blue-400"
+                                        />
                                     </div>
-                                    <input
-                                        type="range"
-                                        min="0.1"
-                                        max="5"
-                                        step="0.1"
-                                        value={priorStd}
-                                        onChange={(e) => setPriorStd(parseFloat(e.target.value))}
-                                        className="w-full h-2 bg-white/20 rounded-lg appearance-none cursor-pointer accent-blue-400"
-                                    />
                                 </div>
                             </div>
+                            <button
+                                onClick={handleCalculate}
+                                disabled={loading || isGeneratingPdf}
+                                className="w-full bg-blue-500 text-white font-bold py-3 rounded-xl hover:bg-blue-400 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+                            >
+                                {loading ? <Loader2 className="animate-spin" /> : "파라미터 추정 (MLE vs MAP)"}
+                            </button>
                         </div>
-                        <button
-                            onClick={handleCalculate}
-                            disabled={loading || isGeneratingPdf}
-                            className="w-full bg-blue-500 text-white font-bold py-3 rounded-xl hover:bg-blue-400 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
-                        >
-                            {loading ? <Loader2 className="animate-spin" /> : "파라미터 추정 (MLE vs MAP)"}
-                        </button>
                     </div>
+                    {error && (
+                        <div className="mt-4 p-3 bg-red-500/20 text-red-400 rounded-lg text-sm border border-red-500/30">
+                            {error}
+                        </div>
+                    )}
                 </div>
-                {error && (
-                    <div className="mt-4 p-3 bg-red-500/20 text-red-400 rounded-lg text-sm border border-red-500/30">
-                        {error}
-                    </div>
-                )}
-            </div>
 
             {result && (
                 <div className="bg-white/5 border border-white/10 p-6 rounded-2xl space-y-6">
@@ -341,6 +383,12 @@ MLE(최대우도추정)는 오직 데이터만 보는 방법이고, MAP(최대�
                     )}
                 </div>
             )}
+
+            {/* ARIMA Tab Content */}
+            {activeTab === 'arima' && <ARIMAAnalysis />}
+
+            {/* Prophet Tab Content */}
+            {activeTab === 'prophet' && <ProphetAnalysis />}
         </div>
     );
 }

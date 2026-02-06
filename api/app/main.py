@@ -199,12 +199,38 @@ def spc_options():
     """
     return {"status": "ok", "allowed": ["POST", "OPTIONS"]}
 
-@app.get("/spc")
-def spc_debug_get():
     """
     Debug GET handler for SPC endpoint.
     """
     return {"status": "debug", "message": "SPC endpoint is reachable. Use POST to perform analysis."}
+
+# Time Series Analysis Endpoints
+from .engine.timeseries import (
+    fit_arima, fit_prophet,
+    ARIMARequest, ARIMAResponse,
+    ProphetRequest, ProphetResponse
+)
+
+@app.post("/arima", response_model=ARIMAResponse)
+def perform_arima_analysis(request: ARIMARequest):
+    """
+    Performs ARIMA time series analysis and forecasting.
+    """
+    try:
+        return fit_arima(request)
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+@app.post("/prophet", response_model=ProphetResponse)
+def perform_prophet_analysis(request: ProphetRequest):
+    """
+    Performs Prophet time series analysis and forecasting.
+    """
+    try:
+        return fit_prophet(request)
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
 
 if __name__ == "__main__":
     import uvicorn

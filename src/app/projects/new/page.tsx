@@ -162,7 +162,7 @@ export default function NewExperimentPage() {
                 <div className="w-full px-6 h-16 flex items-center justify-between">
                     <div className="flex items-center gap-2">
                         <Link href="/" className="text-slate-400 hover:text-white transition-colors">
-                            &larr; 돌아가기
+                            &larr; 홈으로
                         </Link>
                         <span className="text-slate-600">/</span>
                         <span className="font-bold">새 실험 생성</span>

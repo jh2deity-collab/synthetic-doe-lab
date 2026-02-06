@@ -17,18 +17,14 @@ export default function StatisticsPage() {
             {/* Navbar */}
             <nav className="border-b border-white/5 backdrop-blur-md sticky top-0 z-50 bg-black/50">
                 <div className="max-w-7xl mx-auto px-6 h-16 flex items-center justify-between">
-                    <div className="flex items-center gap-2 font-bold text-2xl tracking-tight">
-                        <Link href="/" className="flex items-center gap-2 hover:opacity-80 transition-opacity">
-                            <FlaskConical className="w-6 h-6 text-lab-lime" />
-                            <span>Synthetic <span className="text-lab-lime">DOE</span> Lab</span>
+                    <div className="flex items-center gap-2">
+                        <Link href="/" className="flex items-center gap-2 text-sm text-slate-400 hover:text-white transition-colors">
+                            <ArrowLeft className="w-4 h-4" />
+                            홈으로
                         </Link>
                         <span className="text-slate-600 mx-2">/</span>
-                        <span className="text-white">Statistical Dashboard</span>
+                        <span className="font-bold text-white">Statistical Dashboard</span>
                     </div>
-                    <Link href="/" className="flex items-center gap-2 text-sm text-slate-400 hover:text-white transition-colors">
-                        <ArrowLeft className="w-4 h-4" />
-                        메인으로
-                    </Link>
                 </div>
             </nav>
 
@@ -47,8 +43,8 @@ export default function StatisticsPage() {
                     <button
                         onClick={() => setActiveTab('estimation')}
                         className={`flex items-center gap-2 px-6 py-3 rounded-t-xl font-bold transition-all relative ${activeTab === 'estimation'
-                                ? "text-lab-lime bg-white/5 border-b-2 border-lab-lime"
-                                : "text-slate-400 hover:text-white hover:bg-white/5"
+                            ? "text-lab-lime bg-white/5 border-b-2 border-lab-lime"
+                            : "text-slate-400 hover:text-white hover:bg-white/5"
                             }`}
                     >
                         <Calculator className="w-4 h-4" />
@@ -57,8 +53,8 @@ export default function StatisticsPage() {
                     <button
                         onClick={() => setActiveTab('effect-size')}
                         className={`flex items-center gap-2 px-6 py-3 rounded-t-xl font-bold transition-all relative ${activeTab === 'effect-size'
-                                ? "text-purple-400 bg-white/5 border-b-2 border-purple-400"
-                                : "text-slate-400 hover:text-white hover:bg-white/5"
+                            ? "text-purple-400 bg-white/5 border-b-2 border-purple-400"
+                            : "text-slate-400 hover:text-white hover:bg-white/5"
                             }`}
                     >
                         <Scale className="w-4 h-4" />
@@ -67,8 +63,8 @@ export default function StatisticsPage() {
                     <button
                         onClick={() => setActiveTab('advanced')}
                         className={`flex items-center gap-2 px-6 py-3 rounded-t-xl font-bold transition-all relative ${activeTab === 'advanced'
-                                ? "text-blue-400 bg-white/5 border-b-2 border-blue-400"
-                                : "text-slate-400 hover:text-white hover:bg-white/5"
+                            ? "text-blue-400 bg-white/5 border-b-2 border-blue-400"
+                            : "text-slate-400 hover:text-white hover:bg-white/5"
                             }`}
                     >
                         <BrainCircuit className="w-4 h-4" />

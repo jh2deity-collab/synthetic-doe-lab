@@ -16,6 +16,7 @@ export default function AdvancedEstimationSection() {
     const [priorStd, setPriorStd] = useState<number>(0.5);
     const [result, setResult] = useState<AdvancedResult | null>(null);
     const [loading, setLoading] = useState<boolean>(false);
+    const [isGeneratingPdf, setIsGeneratingPdf] = useState<boolean>(false);
     const [error, setError] = useState<string | null>(null);
 
     // PDF Generation State
@@ -109,17 +110,21 @@ export default function AdvancedEstimationSection() {
         if (!result || !chartRef.current) return;
 
         try {
+            setIsGeneratingPdf(true);
+
             // 1. Capture Chart using html-to-image
             const imgData = await toPng(chartRef.current, { backgroundColor: '#1e293b', pixelRatio: 2 });
             setReportChartImg(imgData);
 
-            // 2. Wait for ReportView to render with image (short delay)
-            setTimeout(() => {
-                downloadPDF("advanced-estimation-report", "Bayesian_Estimation_Report.pdf");
-            }, 500);
+            // 2. Wait for ReportView to render with image (using overlay)
+            setTimeout(async () => {
+                await downloadPDF("advanced-estimation-report", "Bayesian_Estimation_Report.pdf");
+                setIsGeneratingPdf(false);
+            }, 800);
 
         } catch (e) {
             console.error("PDF Fail", e);
+            setIsGeneratingPdf(false);
         }
     };
 
@@ -141,6 +146,13 @@ export default function AdvancedEstimationSection() {
 
     return (
         <div className="space-y-8 relative">
+            {isGeneratingPdf && (
+                <div className="fixed inset-0 z-[9999] bg-black/90 flex flex-col items-center justify-center text-white">
+                    <Loader2 className="w-12 h-12 animate-spin text-lab-lime mb-4" />
+                    <p className="text-xl font-bold">PDF 리포트 생성 중...</p>
+                    <p className="text-slate-400 text-sm mt-2">잠시만 기다려주세요.</p>
+                </div>
+            )}
             <div className="bg-white/5 border border-white/10 p-6 rounded-2xl">
                 <h3 className="text-xl font-bold mb-4 flex items-center gap-2">
                     <BrainCircuit className="w-5 h-5 text-blue-400" />
@@ -213,7 +225,7 @@ export default function AdvancedEstimationSection() {
                         </div>
                         <button
                             onClick={handleCalculate}
-                            disabled={loading}
+                            disabled={loading || isGeneratingPdf}
                             className="w-full bg-blue-500 text-white font-bold py-3 rounded-xl hover:bg-blue-400 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
                         >
                             {loading ? <Loader2 className="animate-spin" /> : "파라미터 추정 (MLE vs MAP)"}
@@ -233,9 +245,10 @@ export default function AdvancedEstimationSection() {
                         <h4 className="text-lg font-bold text-white">분석 결과</h4>
                         <button
                             onClick={handleDownloadPDF}
+                            disabled={isGeneratingPdf}
                             className="flex items-center gap-2 px-4 py-2 bg-white/10 hover:bg-white/20 text-white rounded-lg transition-colors text-sm font-bold border border-white/10"
                         >
-                            <FileDown className="w-4 h-4" />
+                            {isGeneratingPdf ? <Loader2 className="w-4 h-4 animate-spin" /> : <FileDown className="w-4 h-4" />}
                             PDF 리포트 저장
                         </button>
                     </div>
@@ -291,24 +304,25 @@ export default function AdvancedEstimationSection() {
                         현재 결과에서 MAP 추정량은 MLE보다 <strong>{Math.abs(result.mle_mean - result.map_mean) < 0.05 ? "거의 차이가 없습니다." : "확연히 다릅니다."}</strong>
                     </div>
 
-                    {/* Hidden Report Container - Positioned behind content for capture */}
-                    <div style={{ position: 'absolute', top: 0, left: 0, zIndex: -50, opacity: 0, pointerEvents: 'none' }} id="advanced-estimation-report">
-                        <ReportView
-                            title="Bayesian Parameter Estimation Report"
-                            date={new Date().toLocaleDateString()}
-                            params={[
-                                { label: "Prior Mean", value: priorMean },
-                                { label: "Prior Std Dev", value: priorStd }
-                            ]}
-                            results={[
-                                { label: "MLE Mean (Data)", value: result.mle_mean.toFixed(4) },
-                                { label: "MAP Mean (Posterior)", value: result.map_mean.toFixed(4), highlight: true },
-                                { label: "Prior Influence", value: Math.abs(result.mle_mean - result.map_mean) < 0.05 ? "Low" : "High" }
-                            ]}
-                            chartImage={reportChartImg}
-                            insight={`The Maximum Likelihood Estimate (MLE) based solely on data is ${result.mle_mean.toFixed(3)}. Incorporating prior beliefs (Mean=${priorMean}, Std=${priorStd}), the Maximum A Posteriori (MAP) estimate is ${result.map_mean.toFixed(3)}. The shift from MLE to MAP indicates the influence of the prior distribution on the final estimate.`}
-                        />
-                    </div>
+                    {/* Report Container (Masked) */}
+                    {isGeneratingPdf && (
+                        <div style={{ position: 'fixed', top: 0, left: 0, zIndex: 9000, backgroundColor: 'white' }} id="advanced-estimation-report">
+                            <ReportView
+                                title="Bayesian Parameter Estimation Report"
+                                date={new Date().toLocaleDateString()}
+                                params={[
+                                    { label: "Prior Mean", value: priorMean },
+                                    { label: "Prior Std Dev", value: priorStd }
+                                ]}
+                                results={[
+                                    { label: "MLE Mean (Data)", value: result.mle_mean.toFixed(4) },
+                                    { label: "MAP Mean (Posterior)", value: result.map_mean.toFixed(4), highlight: true },
+                                    { label: "Prior Influence", value: Math.abs(result.mle_mean - result.map_mean) < 0.05 ? "Low" : "High" }
+                                ]}
+                                chartImage={reportChartImg}
+                                insight={`The Maximum Likelihood Estimate (MLE) based solely on data is ${result.mle_mean.toFixed(3)}. Incorporating prior beliefs (Mean=${priorMean}, Std=${priorStd}), the Maximum A Posteriori (MAP) estimate is ${result.map_mean.toFixed(3)}. The shift from MLE to MAP indicates the influence of the prior distribution on the final estimate.`}
+                            />
+                        </div>
                 </div>
             )}
         </div>

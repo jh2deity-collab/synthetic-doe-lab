@@ -15,6 +15,7 @@ export default function EffectSizeSection() {
     const [groupBInput, setGroupBInput] = useState<string>("92, 91, 93, 90, 94, 91, 92");
     const [result, setResult] = useState<EffectSizeResult | null>(null);
     const [loading, setLoading] = useState<boolean>(false);
+    const [isGeneratingPdf, setIsGeneratingPdf] = useState<boolean>(false);
     const [error, setError] = useState<string | null>(null);
 
     // PDF Generation State
@@ -93,17 +94,21 @@ export default function EffectSizeSection() {
         if (!result || !chartRef.current) return;
 
         try {
+            setIsGeneratingPdf(true);
+
             // 1. Capture Chart using html-to-image
             const imgData = await toPng(chartRef.current, { backgroundColor: '#1e293b', pixelRatio: 2 });
             setReportChartImg(imgData);
 
-            // 2. Wait for ReportView to render with image (short delay)
-            setTimeout(() => {
-                downloadPDF("effect-size-report", "EffectSize_Report.pdf");
-            }, 500);
+            // 2. Wait for ReportView to render with image (using overlay)
+            setTimeout(async () => {
+                await downloadPDF("effect-size-report", "EffectSize_Report.pdf");
+                setIsGeneratingPdf(false);
+            }, 800);
 
         } catch (e) {
             console.error("PDF Fail", e);
+            setIsGeneratingPdf(false);
         }
     };
 
@@ -126,6 +131,13 @@ export default function EffectSizeSection() {
 
     return (
         <div className="space-y-8 relative">
+            {isGeneratingPdf && (
+                <div className="fixed inset-0 z-[9999] bg-black/90 flex flex-col items-center justify-center text-white">
+                    <Loader2 className="w-12 h-12 animate-spin text-lab-lime mb-4" />
+                    <p className="text-xl font-bold">PDF 리포트 생성 중...</p>
+                    <p className="text-slate-400 text-sm mt-2">잠시만 기다려주세요.</p>
+                </div>
+            )}
             <div className="bg-white/5 border border-white/10 p-6 rounded-2xl">
                 <h3 className="text-xl font-bold mb-4 flex items-center gap-2">
                     <Scale className="w-5 h-5 text-purple-400" />
@@ -194,7 +206,7 @@ export default function EffectSizeSection() {
                 <div className="mt-6">
                     <button
                         onClick={handleCalculate}
-                        disabled={loading}
+                        disabled={loading || isGeneratingPdf}
                         className="w-full bg-purple-600 text-white font-bold py-3 rounded-xl hover:bg-purple-500 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
                     >
                         {loading ? <Loader2 className="animate-spin" /> : "효과 크기 (Cohen's d) 계산"}
@@ -213,9 +225,10 @@ export default function EffectSizeSection() {
                         <h4 className="text-lg font-bold text-white">분석 결과</h4>
                         <button
                             onClick={handleDownloadPDF}
+                            disabled={isGeneratingPdf}
                             className="flex items-center gap-2 px-4 py-2 bg-white/10 hover:bg-white/20 text-white rounded-lg transition-colors text-sm font-bold border border-white/10"
                         >
-                            <FileDown className="w-4 h-4" />
+                            {isGeneratingPdf ? <Loader2 className="w-4 h-4 animate-spin" /> : <FileDown className="w-4 h-4" />}
                             PDF 리포트 저장
                         </button>
                     </div>
@@ -262,24 +275,26 @@ export default function EffectSizeSection() {
                         {Math.abs(result.cohens_d) < 0.2 && " 차이가 미미하여 우연에 의한 것일 수 있습니다."}
                     </div>
 
-                    {/* Hidden Report Container - Positioned behind content for capture */}
-                    <div style={{ position: 'absolute', top: 0, left: 0, zIndex: -50, opacity: 0, pointerEvents: 'none' }} id="effect-size-report">
-                        <ReportView
-                            title="Effect Size Analysis Report"
-                            date={new Date().toLocaleDateString()}
-                            params={[
-                                { label: "Group A Mean", value: result.mean_a.toFixed(2) },
-                                { label: "Group B Mean", value: result.mean_b.toFixed(2) }
-                            ]}
-                            results={[
-                                { label: "Cohen's d", value: result.cohens_d.toFixed(4), highlight: true },
-                                { label: "Interpretation", value: result.interpretation },
-                                { label: "Pooled Std Dev", value: result.std_pooled.toFixed(4) }
-                            ]}
-                            chartImage={reportChartImg}
-                            insight={`The calculated Cohen's d is ${result.cohens_d.toFixed(2)}, which indicates a "${result.interpretation}" between the two groups. The mean difference is ${Math.abs(result.mean_a - result.mean_b).toFixed(2)}.`}
-                        />
-                    </div>
+                    {/* Report Container (Masked) */}
+                    {isGeneratingPdf && (
+                        <div style={{ position: 'fixed', top: 0, left: 0, zIndex: 9000, backgroundColor: 'white' }} id="effect-size-report">
+                            <ReportView
+                                title="Effect Size Analysis Report"
+                                date={new Date().toLocaleDateString()}
+                                params={[
+                                    { label: "Group A Mean", value: result.mean_a.toFixed(2) },
+                                    { label: "Group B Mean", value: result.mean_b.toFixed(2) }
+                                ]}
+                                results={[
+                                    { label: "Cohen's d", value: result.cohens_d.toFixed(4), highlight: true },
+                                    { label: "Interpretation", value: result.interpretation },
+                                    { label: "Pooled Std Dev", value: result.std_pooled.toFixed(4) }
+                                ]}
+                                chartImage={reportChartImg}
+                                insight={`The calculated Cohen's d is ${result.cohens_d.toFixed(2)}, which indicates a "${result.interpretation}" between the two groups. The mean difference is ${Math.abs(result.mean_a - result.mean_b).toFixed(2)}.`}
+                            />
+                        </div>
+                    )}
                 </div>
             )}
         </div>

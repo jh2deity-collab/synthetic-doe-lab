@@ -80,11 +80,21 @@ def fit_arima(request: ARIMARequest) -> ARIMAResponse:
         residuals = fitted_model.resid.tolist()
         fitted_values = fitted_model.fittedvalues.tolist()
         
+        # Get variance of residuals (sigma2)
+        # Try different attributes depending on statsmodels version
+        try:
+            sigma2_value = float(fitted_model.scale)  # Newer versions use 'scale'
+        except AttributeError:
+            try:
+                sigma2_value = float(fitted_model.sigma2)  # Older versions use 'sigma2'
+            except AttributeError:
+                sigma2_value = float(np.var(fitted_model.resid))  # Fallback: calculate from residuals
+        
         return ARIMAResponse(
             model_params={
                 'ar_params': fitted_model.arparams.tolist() if len(fitted_model.arparams) > 0 else [],
                 'ma_params': fitted_model.maparams.tolist() if len(fitted_model.maparams) > 0 else [],
-                'sigma2': float(fitted_model.sigma2)
+                'sigma2': sigma2_value
             },
             aic=float(fitted_model.aic),
             bic=float(fitted_model.bic),

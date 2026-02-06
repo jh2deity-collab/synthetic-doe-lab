@@ -76,15 +76,27 @@ def fit_arima(request: ARIMARequest) -> ARIMAResponse:
         forecast_obj = fitted_model.get_forecast(steps=request.forecast_steps)
         forecast_ci = forecast_obj.conf_int()
         
-        # Handle both DataFrame and numpy array
-        if hasattr(forecast_ci, 'iloc'):
+        # Handle both DataFrame and numpy array properly
+        # Check type instead of hasattr since numpy arrays can have an iloc attribute
+        import pandas as pd
+        if isinstance(forecast_ci, pd.DataFrame):
             # DataFrame
             ci_lower = forecast_ci.iloc[:, 0].tolist()
             ci_upper = forecast_ci.iloc[:, 1].tolist()
-        else:
+        elif isinstance(forecast_ci, np.ndarray):
             # Numpy array
-            ci_lower = forecast_ci[:, 0].tolist() if forecast_ci.ndim > 1 else forecast_ci.tolist()
-            ci_upper = forecast_ci[:, 1].tolist() if forecast_ci.ndim > 1 else forecast_ci.tolist()
+            if forecast_ci.ndim > 1:
+                ci_lower = forecast_ci[:, 0].tolist()
+                ci_upper = forecast_ci[:, 1].tolist()
+            else:
+                # 1D array - shouldn't happen but handle it
+                ci_lower = forecast_ci.tolist()
+                ci_upper = forecast_ci.tolist()
+        else:
+            # Fallback - try to convert to array
+            arr = np.array(forecast_ci)
+            ci_lower = arr[:, 0].tolist() if arr.ndim > 1 else arr.tolist()
+            ci_upper = arr[:, 1].tolist() if arr.ndim > 1 else arr.tolist()
         
         # Get residuals and fitted values
         residuals = fitted_model.resid.tolist()

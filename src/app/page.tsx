@@ -51,6 +51,7 @@ export default function Home() {
                 href="/analysis"
                 className="inline-flex items-center justify-center gap-2 bg-white text-black px-8 py-4 rounded-full font-bold text-lg hover:bg-slate-200 transition-all shadow-[0_0_20px_rgba(255,255,255,0.3)] hover:shadow-[0_0_30px_rgba(255,255,255,0.5)] transform hover:-translate-y-1"
               >
+                <Database className="w-5 h-5" />
                 DOE 분석
               </Link>
               <Link

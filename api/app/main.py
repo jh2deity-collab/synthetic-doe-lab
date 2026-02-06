@@ -14,7 +14,7 @@ app = FastAPI(
     title="Synthetic DOE Lab API",
     description="API for Smart Design of Experiments and Synthetic Data Generation",
     version="0.1.0",
-    root_path="/api" if os.getenv("VERCEL") else "",  # Dynamic root_path: /api for Vercel, empty for local
+    # root_path="/api" if os.getenv("VERCEL") else "",  # Commented out to debug raw path handling
     docs_url="/docs",
     openapi_url="/openapi.json",
     redirect_slashes=False  # CRITICAL: Prevent 307 redirects which change method to GET
@@ -42,7 +42,6 @@ async def custom_405_handler(request: Request, exc):
     )
 
 # CORS Setup
-# CORS Setup - Reverted to allow all for troubleshooting connectivity
 origins = ["*"]
 
 app.add_middleware(
@@ -52,6 +51,32 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
+@app.middleware("http")
+async def debug_middleware(request: Request, call_next):
+    # CRITICAL Debugging: Intercept specific path to show what the server sees
+    if request.url.path.endswith("/debug_probe"):
+        return JSONResponse({
+            "scope_path": request.scope.get("path"),
+            "scope_root_path": request.scope.get("root_path"),
+            "method": request.method,
+            "headers": dict(request.headers),
+            "fastapi_root_path": app.root_path,
+        })
+    
+    # Handle CORS preflight manually if needed (Double safety)
+    if request.method == "OPTIONS":
+        response = JSONResponse(content={"message": "CORS Preflight Allowed"})
+        response.headers["Access-Control-Allow-Origin"] = "*"
+        response.headers["Access-Control-Allow-Methods"] = "POST, GET, DELETE, PUT, OPTIONS"
+        response.headers["Access-Control-Allow-Headers"] = "*"
+        return response
+
+    try:
+        response = await call_next(request)
+        return response
+    except Exception as e:
+        return JSONResponse(status_code=500, content={"error": "Middleware Exception", "detail": str(e)})
 
 @app.get("/")
 def health_check():

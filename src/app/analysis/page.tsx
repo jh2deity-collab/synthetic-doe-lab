@@ -185,12 +185,13 @@ export default function AnalysisPage() {
         <div className="min-h-screen bg-lab-dark text-white font-sans pb-20">
             <header className="border-b border-white/10 backdrop-blur-md sticky top-0 z-10 bg-lab-dark/80">
                 <div className="w-full px-6 h-16 flex items-center justify-between">
-                    <div className="flex items-center gap-2">
-                        <Link href="/" className="text-slate-400 hover:text-white transition-colors">
-                            &larr; 홈으로
+                    <div className="flex items-center gap-2 font-bold text-2xl tracking-tight">
+                        <Link href="/" className="flex items-center gap-2 hover:opacity-80 transition-opacity">
+                            <FlaskConical className="w-6 h-6 text-lab-lime" />
+                            <span>Synthetic <span className="text-lab-lime">DOE</span> Lab</span>
                         </Link>
-                        <span className="text-slate-600">/</span>
-                        <span className="font-bold">DOE 데이터 분석</span>
+                        <span className="text-slate-600 mx-2">/</span>
+                        <span className="text-white">DOE 데이터 분석</span>
                     </div>
                 </div>
             </header>

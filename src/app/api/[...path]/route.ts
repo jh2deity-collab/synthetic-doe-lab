@@ -50,11 +50,13 @@ async function proxyRequest(
         };
 
         let body: string | undefined;
+        let requestData: any = undefined;
+
         if (method !== 'GET' && method !== 'DELETE') {
             try {
-                const json = await request.json();
-                body = JSON.stringify(json);
-                console.log(`[API Proxy] Request body:`, json);
+                requestData = await request.json();
+                body = JSON.stringify(requestData);
+                console.log(`[API Proxy] Request body:`, requestData);
             } catch (e) {
                 console.error(`[API Proxy] Failed to parse request body:`, e);
             }

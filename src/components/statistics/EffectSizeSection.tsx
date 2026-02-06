@@ -1,10 +1,13 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useRef } from "react";
 import Plot from "react-plotly.js";
 import { calculateEffectSize } from "@/lib/api";
 import { EffectSizeResult } from "@/types";
-import { Scale, Loader2 } from "lucide-react";
+import { Scale, Loader2, FileDown } from "lucide-react";
+import html2canvas from "html2canvas";
+import { downloadPDF } from "@/lib/reportUtils";
+import { ReportView } from "./ReportView";
 
 export default function EffectSizeSection() {
     const [groupAInput, setGroupAInput] = useState<string>("85, 87, 86, 88, 85, 89, 84");
@@ -12,6 +15,10 @@ export default function EffectSizeSection() {
     const [result, setResult] = useState<EffectSizeResult | null>(null);
     const [loading, setLoading] = useState<boolean>(false);
     const [error, setError] = useState<string | null>(null);
+
+    // PDF Generation State
+    const [reportChartImg, setReportChartImg] = useState<string | undefined>(undefined);
+    const chartRef = useRef<HTMLDivElement>(null);
 
     const handleCalculate = async () => {
         setLoading(true);
@@ -79,8 +86,27 @@ export default function EffectSizeSection() {
         ];
     }
 
+    const handleDownloadPDF = async () => {
+        if (!result || !chartRef.current) return;
+
+        try {
+            // 1. Capture Chart
+            const canvas = await html2canvas(chartRef.current, { backgroundColor: null, scale: 2 });
+            const imgData = canvas.toDataURL("image/png");
+            setReportChartImg(imgData);
+
+            // 2. Wait for ReportView to render with image (short delay)
+            setTimeout(() => {
+                downloadPDF("effect-size-report", "EffectSize_Report.pdf");
+            }, 100);
+
+        } catch (e) {
+            console.error("PDF Fail", e);
+        }
+    };
+
     return (
-        <div className="space-y-8">
+        <div className="space-y-8 relative">
             <div className="bg-white/5 border border-white/10 p-6 rounded-2xl">
                 <h3 className="text-xl font-bold mb-4 flex items-center gap-2">
                     <Scale className="w-5 h-5 text-purple-400" />
@@ -126,6 +152,17 @@ export default function EffectSizeSection() {
 
             {result && (
                 <div className="bg-white/5 border border-white/10 p-6 rounded-2xl space-y-6">
+                    <div className="flex justify-between items-center mb-4">
+                        <h4 className="text-lg font-bold text-white">분석 결과</h4>
+                        <button
+                            onClick={handleDownloadPDF}
+                            className="flex items-center gap-2 px-4 py-2 bg-white/10 hover:bg-white/20 text-white rounded-lg transition-colors text-sm font-bold border border-white/10"
+                        >
+                            <FileDown className="w-4 h-4" />
+                            PDF 리포트 저장
+                        </button>
+                    </div>
+
                     <div className="flex flex-col items-center justify-center p-8 bg-black/20 rounded-2xl border border-white/5">
                         <div className="text-slate-400 mb-2">Cohen's d</div>
                         <div className="text-5xl font-black text-transparent bg-clip-text bg-gradient-to-r from-lab-lime to-purple-400">
@@ -136,7 +173,7 @@ export default function EffectSizeSection() {
                         </div>
                     </div>
 
-                    <div className="h-[400px] w-full bg-black/20 rounded-xl overflow-hidden border border-white/5 p-2">
+                    <div ref={chartRef} className="h-[400px] w-full bg-black/20 rounded-xl overflow-hidden border border-white/5 p-2">
                         <Plot
                             data={plotData}
                             layout={{
@@ -166,6 +203,25 @@ export default function EffectSizeSection() {
                         이는 통계적으로 <strong>"{result.interpretation}"</strong> 정도의 중요성을 가집니다.
                         {Math.abs(result.cohens_d) > 0.8 && " 차이가 매우 크므로 실질적인 의미가 큽니다."}
                         {Math.abs(result.cohens_d) < 0.2 && " 차이가 미미하여 우연에 의한 것일 수 있습니다."}
+                    </div>
+
+                    {/* Hidden Report Container */}
+                    <div className="fixed top-0 left-[-9999px] z-[-1]" id="effect-size-report">
+                        <ReportView
+                            title="Effect Size Analysis Report"
+                            date={new Date().toLocaleDateString()}
+                            params={[
+                                { label: "Group A Mean", value: result.mean_a.toFixed(2) },
+                                { label: "Group B Mean", value: result.mean_b.toFixed(2) }
+                            ]}
+                            results={[
+                                { label: "Cohen's d", value: result.cohens_d.toFixed(4), highlight: true },
+                                { label: "Interpretation", value: result.interpretation },
+                                { label: "Pooled Std Dev", value: result.std_pooled.toFixed(4) }
+                            ]}
+                            chartImage={reportChartImg}
+                            insight={`The calculated Cohen's d is ${result.cohens_d.toFixed(2)}, which indicates a "${result.interpretation}" between the two groups. The mean difference is ${Math.abs(result.mean_a - result.mean_b).toFixed(2)}.`}
+                        />
                     </div>
                 </div>
             )}

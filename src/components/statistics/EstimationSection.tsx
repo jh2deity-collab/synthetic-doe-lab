@@ -1,10 +1,13 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useRef } from "react";
 import Plot from "react-plotly.js";
 import { calculateEstimation } from "@/lib/api";
 import { EstimationResult } from "@/types";
-import { Calculator, Loader2 } from "lucide-react";
+import { Calculator, Loader2, FileDown } from "lucide-react";
+import html2canvas from "html2canvas";
+import { downloadPDF } from "@/lib/reportUtils";
+import { ReportView } from "./ReportView";
 
 export default function EstimationSection() {
     const [dataInput, setDataInput] = useState<string>("10, 12, 11, 13, 10, 9, 14, 12, 11, 10");
@@ -12,6 +15,10 @@ export default function EstimationSection() {
     const [result, setResult] = useState<EstimationResult | null>(null);
     const [loading, setLoading] = useState<boolean>(false);
     const [error, setError] = useState<string | null>(null);
+
+    // PDF Generation State
+    const [reportChartImg, setReportChartImg] = useState<string | undefined>(undefined);
+    const chartRef = useRef<HTMLDivElement>(null);
 
     const handleCalculate = async () => {
         setLoading(true);
@@ -30,8 +37,27 @@ export default function EstimationSection() {
         }
     };
 
+    const handleDownloadPDF = async () => {
+        if (!result || !chartRef.current) return;
+
+        try {
+            // 1. Capture Chart
+            const canvas = await html2canvas(chartRef.current, { backgroundColor: null, scale: 2 });
+            const imgData = canvas.toDataURL("image/png");
+            setReportChartImg(imgData);
+
+            // 2. Wait for ReportView to render with image (short delay)
+            setTimeout(() => {
+                downloadPDF("estimation-report", "Estimation_Report.pdf");
+            }, 100);
+
+        } catch (e) {
+            console.error("PDF Fail", e);
+        }
+    };
+
     return (
-        <div className="space-y-8">
+        <div className="space-y-8 relative">
             <div className="bg-white/5 border border-white/10 p-6 rounded-2xl">
                 <h3 className="text-xl font-bold mb-4 flex items-center gap-2">
                     <Calculator className="w-5 h-5 text-lab-lime" />
@@ -80,6 +106,17 @@ export default function EstimationSection() {
 
             {result && (
                 <div className="bg-white/5 border border-white/10 p-6 rounded-2xl space-y-6">
+                    <div className="flex justify-between items-center mb-4">
+                        <h4 className="text-lg font-bold text-white">분석 결과</h4>
+                        <button
+                            onClick={handleDownloadPDF}
+                            className="flex items-center gap-2 px-4 py-2 bg-white/10 hover:bg-white/20 text-white rounded-lg transition-colors text-sm font-bold border border-white/10"
+                        >
+                            <FileDown className="w-4 h-4" />
+                            PDF 리포트 저장
+                        </button>
+                    </div>
+
                     <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
                         <div className="p-4 bg-black/20 rounded-xl text-center">
                             <div className="text-sm text-slate-400">표본 평균</div>
@@ -101,7 +138,7 @@ export default function EstimationSection() {
                         </div>
                     </div>
 
-                    <div className="h-[400px] w-full bg-black/20 rounded-xl overflow-hidden border border-white/5 p-2">
+                    <div ref={chartRef} className="h-[400px] w-full bg-black/20 rounded-xl overflow-hidden border border-white/5 p-2">
                         <Plot
                             data={[
                                 {
@@ -148,6 +185,27 @@ export default function EstimationSection() {
                         💡 <strong>해석:</strong> 위 데이터의 평균은 약 <strong>{result.mean.toFixed(2)}</strong>이며,
                         우리는 모집단의 실제 평균이 <strong>{result.confidence_level * 100}%</strong> 확률로
                         <strong> {result.lower_bound.toFixed(2)}</strong>와 <strong>{result.upper_bound.toFixed(2)}</strong> 사이에 있다고 추정할 수 있습니다.
+                    </div>
+
+                    {/* Hidden Report Container */}
+                    <div className="fixed top-0 left-[-9999px] z-[-1]" id="estimation-report">
+                        <ReportView
+                            title="Statistical Estimation Report"
+                            date={new Date().toLocaleDateString()}
+                            params={[
+                                { label: "Confidence Level", value: `${result.confidence_level * 100}%` },
+                                { label: "Sample Size (N)", value: result.n }
+                            ]}
+                            results={[
+                                { label: "Sample Mean", value: result.mean.toFixed(4), highlight: true },
+                                { label: "Margin of Error", value: `±${result.margin_of_error.toFixed(4)}` },
+                                { label: "CI Lower Bound", value: result.lower_bound.toFixed(4) },
+                                { label: "CI Upper Bound", value: result.upper_bound.toFixed(4) },
+                                { label: "Standard Deviation", value: result.std_dev.toFixed(4) }
+                            ]}
+                            chartImage={reportChartImg}
+                            insight={`Based on the sample data (N=${result.n}), the estimated population mean is ${result.mean.toFixed(2)}. We can state with ${result.confidence_level * 100}% confidence that the true population mean lies between ${result.lower_bound.toFixed(2)} and ${result.upper_bound.toFixed(2)}. The margin of error is ±${result.margin_of_error.toFixed(2)}.`}
+                        />
                     </div>
                 </div>
             )}

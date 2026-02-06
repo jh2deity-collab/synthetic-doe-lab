@@ -1,10 +1,13 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useRef } from "react";
 import Plot from "react-plotly.js";
 import { calculateAdvancedEstimation } from "@/lib/api";
 import { AdvancedResult } from "@/types";
-import { BrainCircuit, Loader2 } from "lucide-react";
+import { BrainCircuit, Loader2, FileDown } from "lucide-react";
+import html2canvas from "html2canvas";
+import { downloadPDF } from "@/lib/reportUtils";
+import { ReportView } from "./ReportView";
 
 export default function AdvancedEstimationSection() {
     const [dataInput, setDataInput] = useState<string>("5.1, 4.9, 5.2, 5.8, 4.8, 5.1, 5.3, 5.0");
@@ -13,6 +16,10 @@ export default function AdvancedEstimationSection() {
     const [result, setResult] = useState<AdvancedResult | null>(null);
     const [loading, setLoading] = useState<boolean>(false);
     const [error, setError] = useState<string | null>(null);
+
+    // PDF Generation State
+    const [reportChartImg, setReportChartImg] = useState<string | undefined>(undefined);
+    const chartRef = useRef<HTMLDivElement>(null);
 
     const handleCalculate = async () => {
         setLoading(true);
@@ -96,8 +103,27 @@ export default function AdvancedEstimationSection() {
         ];
     }
 
+    const handleDownloadPDF = async () => {
+        if (!result || !chartRef.current) return;
+
+        try {
+            // 1. Capture Chart
+            const canvas = await html2canvas(chartRef.current, { backgroundColor: null, scale: 2 });
+            const imgData = canvas.toDataURL("image/png");
+            setReportChartImg(imgData);
+
+            // 2. Wait for ReportView to render with image (short delay)
+            setTimeout(() => {
+                downloadPDF("advanced-estimation-report", "Bayesian_Estimation_Report.pdf");
+            }, 100);
+
+        } catch (e) {
+            console.error("PDF Fail", e);
+        }
+    };
+
     return (
-        <div className="space-y-8">
+        <div className="space-y-8 relative">
             <div className="bg-white/5 border border-white/10 p-6 rounded-2xl">
                 <h3 className="text-xl font-bold mb-4 flex items-center gap-2">
                     <BrainCircuit className="w-5 h-5 text-blue-400" />
@@ -170,6 +196,17 @@ export default function AdvancedEstimationSection() {
 
             {result && (
                 <div className="bg-white/5 border border-white/10 p-6 rounded-2xl space-y-6">
+                    <div className="flex justify-between items-center mb-4">
+                        <h4 className="text-lg font-bold text-white">분석 결과</h4>
+                        <button
+                            onClick={handleDownloadPDF}
+                            className="flex items-center gap-2 px-4 py-2 bg-white/10 hover:bg-white/20 text-white rounded-lg transition-colors text-sm font-bold border border-white/10"
+                        >
+                            <FileDown className="w-4 h-4" />
+                            PDF 리포트 저장
+                        </button>
+                    </div>
+
                     <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                         <div className="p-4 bg-black/20 rounded-xl border-l-4 border-lime-400">
                             <div className="text-xs text-slate-400 mb-1">MLE (데이터만 고려)</div>
@@ -188,7 +225,7 @@ export default function AdvancedEstimationSection() {
                         </div>
                     </div>
 
-                    <div className="h-[450px] w-full bg-black/20 rounded-xl overflow-hidden border border-white/5 p-2">
+                    <div ref={chartRef} className="h-[450px] w-full bg-black/20 rounded-xl overflow-hidden border border-white/5 p-2">
                         <Plot
                             data={plotData}
                             layout={{
@@ -219,6 +256,25 @@ export default function AdvancedEstimationSection() {
                         데이터가 충분하면(n이 커지면) <strong>MAP(보라색)</strong>는 <strong>MLE(점선)</strong>에 수렴합니다.
                         반대로 데이터가 적거나 사전 믿음이 강할수록(작은 Prior Std) MAP는 Prior(사전 분포) 쪽에 머무릅니다.
                         현재 결과에서 MAP 추정량은 MLE보다 <strong>{Math.abs(result.mle_mean - result.map_mean) < 0.05 ? "거의 차이가 없습니다." : "확연히 다릅니다."}</strong>
+                    </div>
+
+                    {/* Hidden Report Container */}
+                    <div className="fixed top-0 left-[-9999px] z-[-1]" id="advanced-estimation-report">
+                        <ReportView
+                            title="Bayesian Parameter Estimation Report"
+                            date={new Date().toLocaleDateString()}
+                            params={[
+                                { label: "Prior Mean", value: priorMean },
+                                { label: "Prior Std Dev", value: priorStd }
+                            ]}
+                            results={[
+                                { label: "MLE Mean (Data)", value: result.mle_mean.toFixed(4) },
+                                { label: "MAP Mean (Posterior)", value: result.map_mean.toFixed(4), highlight: true },
+                                { label: "Prior Influence", value: Math.abs(result.mle_mean - result.map_mean) < 0.05 ? "Low" : "High" }
+                            ]}
+                            chartImage={reportChartImg}
+                            insight={`The Maximum Likelihood Estimate (MLE) based solely on data is ${result.mle_mean.toFixed(3)}. Incorporating prior beliefs (Mean=${priorMean}, Std=${priorStd}), the Maximum A Posteriori (MAP) estimate is ${result.map_mean.toFixed(3)}. The shift from MLE to MAP indicates the influence of the prior distribution on the final estimate.`}
+                        />
                     </div>
                 </div>
             )}

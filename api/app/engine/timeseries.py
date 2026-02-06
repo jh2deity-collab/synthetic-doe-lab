@@ -76,6 +76,16 @@ def fit_arima(request: ARIMARequest) -> ARIMAResponse:
         forecast_obj = fitted_model.get_forecast(steps=request.forecast_steps)
         forecast_ci = forecast_obj.conf_int()
         
+        # Handle both DataFrame and numpy array
+        if hasattr(forecast_ci, 'iloc'):
+            # DataFrame
+            ci_lower = forecast_ci.iloc[:, 0].tolist()
+            ci_upper = forecast_ci.iloc[:, 1].tolist()
+        else:
+            # Numpy array
+            ci_lower = forecast_ci[:, 0].tolist() if forecast_ci.ndim > 1 else forecast_ci.tolist()
+            ci_upper = forecast_ci[:, 1].tolist() if forecast_ci.ndim > 1 else forecast_ci.tolist()
+        
         # Get residuals and fitted values
         residuals = fitted_model.resid.tolist()
         fitted_values = fitted_model.fittedvalues.tolist()
@@ -99,8 +109,8 @@ def fit_arima(request: ARIMARequest) -> ARIMAResponse:
             aic=float(fitted_model.aic),
             bic=float(fitted_model.bic),
             forecast=forecast_values,
-            forecast_ci_lower=forecast_ci.iloc[:, 0].tolist(),
-            forecast_ci_upper=forecast_ci.iloc[:, 1].tolist(),
+            forecast_ci_lower=ci_lower,
+            forecast_ci_upper=ci_upper,
             residuals=residuals,
             fitted_values=fitted_values
         )

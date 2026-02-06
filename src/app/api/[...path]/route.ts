@@ -43,6 +43,8 @@ async function proxyRequest(
         const path = pathSegments.join('/');
         const url = `${BACKEND_URL}/${path}`;
 
+        console.log(`[API Proxy] ${method} ${url}`);
+
         const headers: HeadersInit = {
             'Content-Type': 'application/json',
         };
@@ -52,8 +54,9 @@ async function proxyRequest(
             try {
                 const json = await request.json();
                 body = JSON.stringify(json);
-            } catch {
-                // No body or invalid JSON
+                console.log(`[API Proxy] Request body:`, json);
+            } catch (e) {
+                console.error(`[API Proxy] Failed to parse request body:`, e);
             }
         }
 
@@ -63,8 +66,11 @@ async function proxyRequest(
             body,
         });
 
+        console.log(`[API Proxy] Response status: ${response.status}`);
+
         if (!response.ok) {
             const errorText = await response.text();
+            console.error(`[API Proxy] Error response:`, errorText);
             return NextResponse.json(
                 { detail: errorText || `Request to ${path} failed` },
                 { status: response.status }
@@ -74,7 +80,7 @@ async function proxyRequest(
         const data = await response.json();
         return NextResponse.json(data);
     } catch (error) {
-        console.error('API Proxy Error:', error);
+        console.error('[API Proxy] Exception:', error);
         return NextResponse.json(
             { detail: error instanceof Error ? error.message : 'Internal server error' },
             { status: 500 }

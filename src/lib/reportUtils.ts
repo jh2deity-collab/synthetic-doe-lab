@@ -1,4 +1,4 @@
-import html2canvas from 'html2canvas';
+import { toPng } from 'html-to-image';
 import jsPDF from 'jspdf';
 
 export const downloadPDF = async (elementId: string, fileName: string) => {
@@ -9,15 +9,12 @@ export const downloadPDF = async (elementId: string, fileName: string) => {
     }
 
     try {
-        // Capture with high scale for better quality
-        const canvas = await html2canvas(element, {
-            scale: 2,
-            useCORS: true,
-            logging: false,
-            backgroundColor: '#ffffff'
+        // Use html-to-image for better compatibility with modern CSS
+        const imgData = await toPng(element, {
+            backgroundColor: '#ffffff',
+            cacheBust: true,
+            pixelRatio: 2 // High quality
         });
-
-        const imgData = canvas.toDataURL('image/png');
 
         // A4 Paper Size in mm (Portrait)
         const pdfWidth = 210;
@@ -46,6 +43,6 @@ export const downloadPDF = async (elementId: string, fileName: string) => {
         pdf.save(fileName);
     } catch (error) {
         console.error('PDF Generation Error:', error);
-        alert('리포트 생성 중 오류가 발생했습니다.');
+        alert('리포트 생성 중 오류가 발생했습니다. (Unsupported CSS Syntax)');
     }
 };

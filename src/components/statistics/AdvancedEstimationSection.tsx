@@ -5,7 +5,7 @@ import Plot from "react-plotly.js";
 import { calculateAdvancedEstimation } from "@/lib/api";
 import { AdvancedResult } from "@/types";
 import { BrainCircuit, Loader2, FileDown } from "lucide-react";
-import html2canvas from "html2canvas";
+import { toPng } from "html-to-image";
 import { downloadPDF } from "@/lib/reportUtils";
 import { ReportView } from "./ReportView";
 
@@ -107,9 +107,8 @@ export default function AdvancedEstimationSection() {
         if (!result || !chartRef.current) return;
 
         try {
-            // 1. Capture Chart
-            const canvas = await html2canvas(chartRef.current, { backgroundColor: null, scale: 2 });
-            const imgData = canvas.toDataURL("image/png");
+            // 1. Capture Chart using html-to-image
+            const imgData = await toPng(chartRef.current, { backgroundColor: '#1e293b', pixelRatio: 2 });
             setReportChartImg(imgData);
 
             // 2. Wait for ReportView to render with image (short delay)

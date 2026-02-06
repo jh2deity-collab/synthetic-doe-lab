@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import Link from "next/link";
-import { Upload, FileSpreadsheet, Table2, Play, AlertCircle, Download } from "lucide-react";
+import { Upload, FileSpreadsheet, Table2, Play, AlertCircle, Download, FlaskConical } from "lucide-react";
 import * as XLSX from "xlsx";
 import { clsx } from "clsx";
 import { SPCDashboard } from "@/components/spc/SPCDashboard";

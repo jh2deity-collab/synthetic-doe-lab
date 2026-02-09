@@ -111,3 +111,50 @@ export interface AdvancedResult {
     kde_y: number[];
 }
 
+// --- Time Series Types ---
+
+export interface ARIMARequest {
+    data: { values: number[] };
+    p: number;
+    d: number;
+    q: number;
+    forecast_steps: number;
+}
+
+export interface ARIMAResult {
+    model_params: {
+        ar_params: number[];
+        ma_params: number[];
+        sigma2: number;
+    };
+    aic: number;
+    bic: number;
+    forecast: number[];
+    forecast_ci_lower: number[];
+    forecast_ci_upper: number[];
+    residuals: number[];
+    fitted_values: number[];
+}
+
+export interface ProphetRequest {
+    data: { values: number[] };
+    forecast_periods: number;
+    seasonality_mode: 'additive' | 'multiplicative';
+    yearly_seasonality: boolean;
+    weekly_seasonality: boolean;
+    daily_seasonality: boolean;
+}
+
+export interface ProphetResult {
+    forecast: number[];
+    forecast_lower: number[];
+    forecast_upper: number[];
+    trend: number[];
+    dates: string[];
+    components: {
+        trend?: number[];
+        yearly?: number[];
+        weekly?: number[];
+    };
+}
+

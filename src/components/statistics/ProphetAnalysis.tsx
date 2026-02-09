@@ -6,19 +6,7 @@ import { Sparkles, Loader2, FileDown } from "lucide-react";
 import { toPng } from "html-to-image";
 import { downloadPDF } from "@/lib/reportUtils";
 import { ReportView } from "./ReportView";
-
-interface ProphetResult {
-    forecast: number[];
-    forecast_lower: number[];
-    forecast_upper: number[];
-    trend: number[];
-    dates: string[];
-    components: {
-        trend?: number[];
-        yearly?: number[];
-        weekly?: number[];
-    };
-}
+import { performProphetAnalysis, ProphetResult } from "@/lib/api";
 
 export default function ProphetAnalysis() {
     const [dataInput, setDataInput] = useState<string>("100, 105, 110, 108, 115, 120, 118, 125, 130, 128, 135, 140, 138, 145, 150");
@@ -41,25 +29,15 @@ export default function ProphetAnalysis() {
                 throw new Error("Prophet 분석을 위해 최소 10개 이상의 데이터가 필요합니다.");
             }
 
-            const response = await fetch("/api/prophet", {
-                method: "POST",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({
-                    data: { values: data },
-                    forecast_periods: forecastPeriods,
-                    seasonality_mode: seasonalityMode,
-                    yearly_seasonality: false,
-                    weekly_seasonality: false,
-                    daily_seasonality: false
-                })
+            const res = await performProphetAnalysis({
+                data: { values: data },
+                forecast_periods: forecastPeriods,
+                seasonality_mode: seasonalityMode,
+                yearly_seasonality: false,
+                weekly_seasonality: false,
+                daily_seasonality: false
             });
 
-            if (!response.ok) {
-                const errorData = await response.json();
-                throw new Error(errorData.detail || "Prophet 분석 실패");
-            }
-
-            const res = await response.json();
             setResult(res);
         } catch (err: unknown) {
             setError(err instanceof Error ? err.message : String(err));
@@ -326,7 +304,7 @@ export default function ProphetAnalysis() {
                     <div className="bg-slate-900/50 p-4 rounded-lg">
                         <h4 className="text-sm font-semibold text-slate-300 mb-2">예측값</h4>
                         <div className="flex flex-wrap gap-2">
-                            {result.forecast.map((val, idx) => (
+                            {result.forecast.map((val: number, idx: number) => (
                                 <div key={idx} className="bg-slate-800 px-3 py-1 rounded text-sm">
                                     <span className="text-slate-400">t+{idx + 1}:</span>{" "}
                                     <span className="text-purple-400 font-semibold">{val.toFixed(2)}</span>
@@ -350,7 +328,7 @@ export default function ProphetAnalysis() {
                         ]}
                         results={[
                             { label: "첫 예측값", value: result.forecast[0].toFixed(2), highlight: true },
-                            { label: "평균 트렌드", value: (result.trend.reduce((a, b) => a + b, 0) / result.trend.length).toFixed(2) },
+                            { label: "평균 트렌드", value: (result.trend.reduce((a: number, b: number) => a + b, 0) / result.trend.length).toFixed(2) },
                             { label: "예측 범위", value: `${result.forecast_lower[0].toFixed(1)} ~ ${result.forecast_upper[0].toFixed(1)}` }
                         ]}
                         chartImage={reportChartImg}

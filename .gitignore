@@ -1,7 +1,7 @@
 # See https://help.github.com/articles/ignoring-files/ for more about ignoring files.
 
 # dependencies
-node_modules
+node_modules/
 /.pnp
 .pnp.*
 .yarn/*
@@ -18,20 +18,25 @@ node_modules
 out/
 
 # production
-build
+build/
+dist/
 
 # misc
 .DS_Store
 *.pem
-
-# debug
+*.log
 npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
 .pnpm-debug.log*
 
-# env files (can opt-in for committing if needed)
-.env*
+# env files
+.env
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+*.env.local
 
 # vercel
 .vercel
@@ -43,11 +48,44 @@ next-env.d.ts
 # python
 __pycache__/
 *.pyc
+*.pyo
+*.pyd
+.Python
+env/
+venv/
+.venv/
+pip-log.txt
+pip-delete-this-directory.txt
+.toast
+.lucid
+.replit
+.atlas
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+*.egg-info/
+.installed.cfg
+*.egg
 
-# 환경 변수 파일 제외
-.env
-.env.local
-.env.*.local
-
-backend/.env.local
-frontend/
+# electron
+*.exe
+*.exe.blockmap
+*.zip
+*.dmg
+*.dmg.blockmap
+*.AppImage
+*.pacman
+*.deb
+*.rpm
+*.freebsd
+*.snap
+electron-builder.yaml
+main.spec

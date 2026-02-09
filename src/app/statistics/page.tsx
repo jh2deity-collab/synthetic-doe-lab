@@ -1,15 +1,17 @@
 "use client";
 
+export const dynamic = "force-static";
+
 import { useState } from "react";
-import dynamic from "next/dynamic";
+import nextDynamic from "next/dynamic";
 import Link from "next/link";
 import { FlaskConical, Calculator, Scale, BrainCircuit, ArrowLeft } from "lucide-react";
 
 // Dynamic imports to avoid SSR issues with Plotly
-const EstimationSection = dynamic(() => import("@/components/statistics/EstimationSection"), { ssr: false });
-const EffectSizeSection = dynamic(() => import("@/components/statistics/EffectSizeSection"), { ssr: false });
-const AdvancedEstimationSection = dynamic(() => import("@/components/statistics/AdvancedEstimationSection"), { ssr: false });
-const HelpSection = dynamic(() => import("@/components/common/HelpSection").then(mod => mod.HelpSection), { ssr: false });
+const EstimationSection = nextDynamic(() => import("@/components/statistics/EstimationSection"), { ssr: false });
+const EffectSizeSection = nextDynamic(() => import("@/components/statistics/EffectSizeSection"), { ssr: false });
+const AdvancedEstimationSection = nextDynamic(() => import("@/components/statistics/AdvancedEstimationSection"), { ssr: false });
+const HelpSection = nextDynamic(() => import("@/components/common/HelpSection").then(mod => mod.HelpSection), { ssr: false });
 
 type Tab = 'estimation' | 'effect-size' | 'advanced' | 'help';
 

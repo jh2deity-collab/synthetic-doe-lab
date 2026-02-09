@@ -77,10 +77,15 @@ class SyntheticGenerator:
 
         # Parallel execution for faster batch generation
         with ThreadPoolExecutor(max_workers=10) as executor:
-            future_to_row = {executor.submit(self.generate_row, row, request.context, request.mock): row for row in request.matrix}
+            # Add index to results to maintain original order
+            future_to_index = {executor.submit(self.generate_row, row, request.context, request.mock): i for i, row in enumerate(request.matrix)}
             
-            for future in as_completed(future_to_row):
-                row = future_to_row[future]
+            # Temporary list to store (index, result)
+            indexed_results = []
+            
+            for future in as_completed(future_to_index):
+                index = future_to_index[future]
+                row = request.matrix[index]
                 try:
                     generated_content = future.result()
                     # Merge the original conditions with the generated output
@@ -95,16 +100,16 @@ class SyntheticGenerator:
                     except:
                          result_row['synthetic_output'] = generated_content
                          
-                    results.append(result_row)
+                    indexed_results.append((index, result_row))
                 except Exception as exc:
                     # Handle individual row failure
                     error_row = row.copy()
                     error_row['synthetic_output'] = f"[ERROR] {str(exc)}"
-                    results.append(error_row)
+                    indexed_results.append((index, error_row))
         
-        # Sort results to maintain original order if needed (optional, but good for consistency)
-        # results.sort(key=lambda x: request.matrix.index(future_to_row[...])) - tricky with dicts
-        # Simpler: just return results (order might be shuffled, but SPC doesn't care about order usually)
+        # Sort results based on the original index
+        indexed_results.sort(key=lambda x: x[0])
+        results = [item[1] for item in indexed_results]
         
             
         end_time = time.time()

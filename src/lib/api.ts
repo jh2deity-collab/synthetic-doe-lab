@@ -1,5 +1,20 @@
 
-import { DesignConfig, SyntheticDataPayload, SPCAnalysisPayload, AnalysisPayload, EstimationRequest, EstimationResult, EffectSizeRequest, EffectSizeResult, AdvancedRequest, AdvancedResult } from '@/types';
+import {
+    DesignConfig,
+    SyntheticDataPayload,
+    SPCAnalysisPayload,
+    AnalysisPayload,
+    EstimationRequest,
+    EstimationResult,
+    EffectSizeRequest,
+    EffectSizeResult,
+    AdvancedRequest,
+    AdvancedResult,
+    ARIMARequest,
+    ARIMAResult,
+    ProphetRequest,
+    ProphetResult
+} from '@/types';
 
 const getApiBaseUrl = () => {
     // 1. If explicitly set in environment variables, use it
@@ -7,12 +22,12 @@ const getApiBaseUrl = () => {
         return process.env.NEXT_PUBLIC_API_URL;
     }
 
-    // 2. Client-side: Use relative path (handled by Next.js Rewrites or Nginx)
+    // 2. Desktop/Client-side: For packaged app, always use local backend
     if (typeof window !== 'undefined') {
-        return '';
+        return 'http://127.0.0.1:8000';
     }
 
-    // 3. Server-side (SSR): Must use absolute URL to localhost (Backend)
+    // 3. Server-side (SSR) if any: Must use absolute URL
     return 'http://127.0.0.1:8000';
 };
 
@@ -20,8 +35,8 @@ const API_BASE_URL = getApiBaseUrl();
 
 export const generateDesign = async (config: DesignConfig) => {
     try {
-        console.log(`[API] Requesting: ${API_BASE_URL}/api/design`);
-        const res = await fetch(`${API_BASE_URL}/api/design`, {
+        console.log(`[API] Requesting: ${API_BASE_URL}/design`);
+        const res = await fetch(`${API_BASE_URL}/design`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify(config),
@@ -42,8 +57,8 @@ export const generateDesign = async (config: DesignConfig) => {
 
 export const generateSyntheticData = async (payload: SyntheticDataPayload) => {
     try {
-        console.log(`[API] Requesting: ${API_BASE_URL}/api/generate`);
-        const res = await fetch(`${API_BASE_URL}/api/generate`, {
+        console.log(`[API] Requesting: ${API_BASE_URL}/generate`);
+        const res = await fetch(`${API_BASE_URL}/generate`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify(payload),
@@ -64,8 +79,8 @@ export const generateSyntheticData = async (payload: SyntheticDataPayload) => {
 
 export const performSPCAnalysis = async (payload: SPCAnalysisPayload) => {
     try {
-        console.log(`[API] Requesting: ${API_BASE_URL}/api/spc`);
-        const res = await fetch(`${API_BASE_URL}/api/spc`, {
+        console.log(`[API] Requesting: ${API_BASE_URL}/spc`);
+        const res = await fetch(`${API_BASE_URL}/spc`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify(payload),
@@ -86,8 +101,8 @@ export const performSPCAnalysis = async (payload: SPCAnalysisPayload) => {
 
 export const generateExpertAnalysis = async (payload: AnalysisPayload) => {
     try {
-        console.log(`[API] Requesting: ${API_BASE_URL}/api/analysis`, payload);
-        const res = await fetch(`${API_BASE_URL}/api/analysis`, {
+        console.log(`[API] Requesting: ${API_BASE_URL}/analysis`, payload);
+        const res = await fetch(`${API_BASE_URL}/analysis`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify(payload),
@@ -106,12 +121,9 @@ export const generateExpertAnalysis = async (payload: AnalysisPayload) => {
     }
 };
 
-
-
-
 export const calculateEstimation = async (payload: EstimationRequest): Promise<EstimationResult> => {
     try {
-        const res = await fetch(`${API_BASE_URL}/api/stats/estimation`, {
+        const res = await fetch(`${API_BASE_URL}/stats/estimation`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify(payload),
@@ -126,7 +138,7 @@ export const calculateEstimation = async (payload: EstimationRequest): Promise<E
 
 export const calculateEffectSize = async (payload: EffectSizeRequest): Promise<EffectSizeResult> => {
     try {
-        const res = await fetch(`${API_BASE_URL}/api/stats/effect-size`, {
+        const res = await fetch(`${API_BASE_URL}/stats/effect-size`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify(payload),
@@ -141,7 +153,7 @@ export const calculateEffectSize = async (payload: EffectSizeRequest): Promise<E
 
 export const calculateAdvancedEstimation = async (payload: AdvancedRequest): Promise<AdvancedResult> => {
     try {
-        const res = await fetch(`${API_BASE_URL}/api/stats/advanced`, {
+        const res = await fetch(`${API_BASE_URL}/stats/advanced`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify(payload),
@@ -150,6 +162,44 @@ export const calculateAdvancedEstimation = async (payload: AdvancedRequest): Pro
         return await res.json();
     } catch (error) {
         console.error("[API] Exception:", error);
+        throw error;
+    }
+};
+
+// --- Time Series Analysis ---
+
+export const performARIMAAnalysis = async (payload: ARIMARequest): Promise<ARIMAResult> => {
+    try {
+        const res = await fetch(`${API_BASE_URL}/arima`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(payload),
+        });
+        if (!res.ok) {
+            const errData = await res.json();
+            throw new Error(errData.detail || "ARIMA 분석 실패");
+        }
+        return await res.json();
+    } catch (error) {
+        console.error("[API] ARIMA Exception:", error);
+        throw error;
+    }
+};
+
+export const performProphetAnalysis = async (payload: ProphetRequest): Promise<ProphetResult> => {
+    try {
+        const res = await fetch(`${API_BASE_URL}/prophet`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(payload),
+        });
+        if (!res.ok) {
+            const errData = await res.json();
+            throw new Error(errData.detail || "Prophet 분석 실패");
+        }
+        return await res.json();
+    } catch (error) {
+        console.error("[API] Prophet Exception:", error);
         throw error;
     }
 };

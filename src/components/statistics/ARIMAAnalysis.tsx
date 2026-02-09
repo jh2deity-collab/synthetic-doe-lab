@@ -6,21 +6,7 @@ import { TrendingUp, Loader2, FileDown } from "lucide-react";
 import { toPng } from "html-to-image";
 import { downloadPDF } from "@/lib/reportUtils";
 import { ReportView } from "./ReportView";
-
-interface ARIMAResult {
-    model_params: {
-        ar_params: number[];
-        ma_params: number[];
-        sigma2: number;
-    };
-    aic: number;
-    bic: number;
-    forecast: number[];
-    forecast_ci_lower: number[];
-    forecast_ci_upper: number[];
-    residuals: number[];
-    fitted_values: number[];
-}
+import { performARIMAAnalysis, ARIMAResult } from "@/lib/api";
 
 export default function ARIMAAnalysis() {
     const [dataInput, setDataInput] = useState<string>("10, 12, 13, 15, 14, 16, 18, 17, 19, 21, 20, 22, 24, 23, 25");
@@ -45,22 +31,12 @@ export default function ARIMAAnalysis() {
                 throw new Error("ARIMA 분석을 위해 최소 10개 이상의 데이터가 필요합니다.");
             }
 
-            const response = await fetch("/api/arima", {
-                method: "POST",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({
-                    data: { values: data },
-                    p, d, q,
-                    forecast_steps: forecastSteps
-                })
+            const res = await performARIMAAnalysis({
+                data: { values: data },
+                p, d, q,
+                forecast_steps: forecastSteps
             });
 
-            if (!response.ok) {
-                const errorData = await response.json();
-                throw new Error(errorData.detail || "ARIMA 분석 실패");
-            }
-
-            const res = await response.json();
             setResult(res);
         } catch (err: unknown) {
             setError(err instanceof Error ? err.message : String(err));
@@ -354,7 +330,7 @@ export default function ARIMAAnalysis() {
                     <div className="bg-slate-900/50 p-4 rounded-lg">
                         <h4 className="text-sm font-semibold text-slate-300 mb-2">예측값</h4>
                         <div className="flex flex-wrap gap-2">
-                            {result.forecast.map((val, idx) => (
+                            {result.forecast.map((val: number, idx: number) => (
                                 <div key={idx} className="bg-slate-800 px-3 py-1 rounded text-sm">
                                     <span className="text-slate-400">t+{idx + 1}:</span>{" "}
                                     <span className="text-orange-400 font-semibold">{val.toFixed(2)}</span>

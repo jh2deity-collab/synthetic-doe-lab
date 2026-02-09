@@ -2,12 +2,51 @@
   "name": "synthetic-doe-lab",
   "version": "0.1.0",
   "private": true,
+  "main": "electron/main.js",
   "scripts": {
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
     "lint": "next lint",
-    "run-python": "python -m uvicorn api.app.main:app --reload --port 8000"
+    "run-python": "python -m uvicorn api.app.main:app --reload --port 8000",
+    "electron:dev": "concurrently \"next dev\" \"wait-on http://localhost:3000 && electron .\"",
+    "dist": "npm run build && electron-builder",
+    "package-python": "python -m PyInstaller --noconfirm --onedir --name main --add-data \"api;api\" backend_entry.py",
+    "build:all": "npm run build && npm run package-python && electron-builder"
+  },
+  "build": {
+    "appId": "com.syntheticdoe.lab",
+    "productName": "Synthetic DOE Lab",
+    "win": {
+      "target": "nsis",
+      "icon": "public/favicon.ico",
+      "signAndEditExecutable": false
+    },
+    "nsis": {
+      "oneClick": false,
+      "allowToChangeInstallationDirectory": true,
+      "createDesktopShortcut": true,
+      "createStartMenuShortcut": true,
+      "shortcutName": "Synthetic DOE Lab"
+    },
+    "extraResources": [
+      {
+        "from": "dist/main",
+        "to": "backend",
+        "filter": [
+          "**/*"
+        ]
+      },
+      {
+        "from": ".env.local",
+        "to": ".env.local"
+      }
+    ],
+    "files": [
+      "out/**/*",
+      "electron/**/*",
+      "package.json"
+    ]
   },
   "dependencies": {
     "@hookform/resolvers": "^5.2.2",
@@ -18,10 +57,10 @@
     "html2canvas": "^1.4.1",
     "jspdf": "^4.0.0",
     "lucide-react": "^0.563.0",
-    "next": "latest",
+    "next": "15.1.6",
     "plotly.js": "^3.3.1",
-    "react": "latest",
-    "react-dom": "latest",
+    "react": "^19.0.0",
+    "react-dom": "^19.0.0",
     "react-hook-form": "^7.71.1",
     "react-plotly.js": "^2.6.0",
     "tailwind-merge": "^3.4.0",
@@ -33,9 +72,13 @@
     "@types/node": "^20",
     "@types/react": "^19",
     "@types/react-dom": "^19",
+    "concurrently": "^9.2.1",
+    "electron": "^40.2.1",
+    "electron-builder": "^26.7.0",
     "eslint": "^9",
-    "eslint-config-next": "16.1.6",
+    "eslint-config-next": "15.1.6",
     "tailwindcss": "^4",
-    "typescript": "^5"
+    "typescript": "^5",
+    "wait-on": "^9.0.3"
   }
 }

@@ -1,13 +1,15 @@
 "use client";
 
+export const dynamic = "force-static";
+
 import { useState } from "react";
 import Link from "next/link";
 import { Upload, FileSpreadsheet, Table2, Play, AlertCircle, Download, FlaskConical } from "lucide-react";
 import * as XLSX from "xlsx";
 import { clsx } from "clsx";
-import dynamic from "next/dynamic";
+import nextDynamic from "next/dynamic";
 import { SPCDashboard } from "@/components/spc/SPCDashboard";
-const HelpSection = dynamic(() => import("@/components/common/HelpSection").then(mod => mod.HelpSection), { ssr: false });
+const HelpSection = nextDynamic(() => import("@/components/common/HelpSection").then(mod => mod.HelpSection), { ssr: false });
 
 import { SPCResult } from "@/types";
 

@@ -1,9 +1,25 @@
-# Ignore the old frontend folder structure
+# Ignore frontend source and build artifacts
 frontend/
+.next/
+out/
+build/
+dist/
+node_modules/
 
-# Ignore backend folder (not needed for build)
+# Ignore backend local development files
 backend/
+venv/
+.venv/
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
 
-# Ignore local development files
+# Ignore local environment and logs
 .env.local
+*.env.local
 *.log
+
+# Ignore Electron related
+electron/
+main.spec

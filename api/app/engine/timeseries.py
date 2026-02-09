@@ -59,7 +59,14 @@ def fit_arima(request: ARIMARequest) -> ARIMAResponse:
     Fit ARIMA model and generate forecasts
     """
     try:
-        from statsmodels.tsa.arima.model import ARIMA
+        try:
+            from statsmodels.tsa.arima.model import ARIMA
+        except ImportError:
+            raise ImportError(
+                "statsmodels library is not installed. "
+                "For ARIMA functionality, please install statsmodels (pip install statsmodels). "
+                "Note: This feature may be disabled in serverless environments due to size limits."
+            )
         
         # Prepare data
         values = np.array(request.data.values)
@@ -77,13 +84,11 @@ def fit_arima(request: ARIMARequest) -> ARIMAResponse:
         forecast_ci = forecast_obj.conf_int()
         
         # Convert to numpy array first to avoid iloc issues
-        # This works for both DataFrame and numpy array
         ci_array = np.asarray(forecast_ci)
         if ci_array.ndim > 1 and ci_array.shape[1] >= 2:
             ci_lower = ci_array[:, 0].tolist()
             ci_upper = ci_array[:, 1].tolist()
         else:
-            # Fallback for unexpected format
             ci_lower = ci_array.flatten().tolist()
             ci_upper = ci_array.flatten().tolist()
         
@@ -92,14 +97,13 @@ def fit_arima(request: ARIMARequest) -> ARIMAResponse:
         fitted_values = fitted_model.fittedvalues.tolist()
         
         # Get variance of residuals (sigma2)
-        # Try different attributes depending on statsmodels version
         try:
-            sigma2_value = float(fitted_model.scale)  # Newer versions use 'scale'
+            sigma2_value = float(fitted_model.scale)
         except AttributeError:
             try:
-                sigma2_value = float(fitted_model.sigma2)  # Older versions use 'sigma2'
+                sigma2_value = float(fitted_model.sigma2)
             except AttributeError:
-                sigma2_value = float(np.var(fitted_model.resid))  # Fallback: calculate from residuals
+                sigma2_value = float(np.var(fitted_model.resid))
         
         return ARIMAResponse(
             model_params={
@@ -115,6 +119,8 @@ def fit_arima(request: ARIMARequest) -> ARIMAResponse:
             residuals=residuals,
             fitted_values=fitted_values
         )
+    except ImportError as ie:
+        raise ValueError(str(ie))
     except Exception as e:
         raise ValueError(f"ARIMA fitting failed: {str(e)}")
 
@@ -124,7 +130,14 @@ def fit_prophet(request: ProphetRequest) -> ProphetResponse:
     Fit Prophet model and generate forecasts
     """
     try:
-        from prophet import Prophet
+        try:
+            from prophet import Prophet
+        except ImportError:
+            raise ImportError(
+                "prophet library is not installed. "
+                "For Prophet functionality, please install prophet (pip install prophet). "
+                "Note: This feature is disabled in Vercel serverless environment due to size limits."
+            )
         
         # Prepare data in Prophet format
         if request.data.dates:
@@ -174,5 +187,7 @@ def fit_prophet(request: ProphetRequest) -> ProphetResponse:
             dates=forecast_data['ds'].dt.strftime('%Y-%m-%d').tolist(),
             components=components
         )
+    except ImportError as ie:
+        raise ValueError(str(ie))
     except Exception as e:
         raise ValueError(f"Prophet fitting failed: {str(e)}")

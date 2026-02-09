@@ -1,5 +1,7 @@
 "use client";
 
+export const dynamic = "force-static";
+
 import { useForm, FormProvider } from "react-hook-form";
 import { VariableForm } from "@/components/VariableForm";
 import { DistributionPlot } from "@/components/DistributionPlot";
@@ -8,9 +10,9 @@ import Link from "next/link";
 import { useState } from "react";
 import { generateDesign } from "@/lib/api";
 import clsx from "clsx";
-import dynamic from "next/dynamic";
+import nextDynamic from "next/dynamic";
 import { SPCResult, DesignConfig } from "@/types";
-const HelpSection = dynamic(() => import("@/components/common/HelpSection").then(mod => mod.HelpSection), { ssr: false });
+const HelpSection = nextDynamic(() => import("@/components/common/HelpSection").then(mod => mod.HelpSection), { ssr: false });
 // import { SPCDashboard } from "@/components/spc/SPCDashboard"; // Removed unused
 // import { jsPDF } from "jspdf"; // Removed unused dynamic import reference
 
